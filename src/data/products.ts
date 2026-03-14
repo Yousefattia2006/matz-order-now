@@ -3,6 +3,7 @@ export interface Product {
   nameAr: string;
   nameEn?: string;
   emoji: string;
+  imageUrl?: string;
   price: number;
   unit: string;
   categoryId: string;
