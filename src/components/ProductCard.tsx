@@ -2,7 +2,7 @@ import { Product } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { useState } from "react";
 
 interface ProductCardProps {
@@ -11,8 +11,11 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, compact = false }: ProductCardProps) {
-  const { addItem } = useCart();
+  const { items, addItem, updateQuantity } = useCart();
   const [imgError, setImgError] = useState(false);
+
+  const cartItem = items.find((item) => item.product.id === product.id);
+  const quantity = cartItem?.quantity || 0;
 
   return (
     <motion.div
@@ -39,7 +42,6 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
       </div>
 
       <div className="p-3 md:p-4 flex flex-col flex-1">
-        {/* Product Name */}
         <h3
           className={`font-bold text-foreground leading-tight ${
             compact ? "text-sm" : "text-base md:text-lg"
@@ -47,11 +49,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
         >
           {product.nameAr}
         </h3>
-
-        {/* Unit/Weight */}
         <p className="text-muted-foreground text-xs mt-1">{product.unit}</p>
-
-        {/* Price */}
         <p
           className={`font-bold text-accent mt-auto pt-2 ${
             compact ? "text-lg" : "text-xl md:text-2xl"
@@ -60,16 +58,40 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           {product.price} ج
         </p>
 
-        {/* Add to Cart Button */}
-        <Button
-          variant="default"
-          size={compact ? "default" : "lg"}
-          className="w-full mt-3 gap-2"
-          onClick={() => addItem(product)}
-        >
-          <Plus className="h-5 w-5" />
-          أضف للسلة
-        </Button>
+        {/* Add / Quantity Controls */}
+        {quantity === 0 ? (
+          <Button
+            variant="default"
+            size={compact ? "default" : "lg"}
+            className="w-full mt-3 gap-2"
+            onClick={() => addItem(product)}
+          >
+            <Plus className="h-5 w-5" />
+            أضف للسلة
+          </Button>
+        ) : (
+          <div className="flex items-center justify-between mt-3 bg-primary/10 rounded-xl p-1">
+            <Button
+              variant="default"
+              size="icon"
+              className="h-11 w-11 rounded-lg"
+              onClick={() => updateQuantity(product.id, quantity - 1)}
+            >
+              <Minus className="h-5 w-5" />
+            </Button>
+            <span className="text-xl font-bold text-foreground min-w-[40px] text-center">
+              {quantity}
+            </span>
+            <Button
+              variant="default"
+              size="icon"
+              className="h-11 w-11 rounded-lg"
+              onClick={() => updateQuantity(product.id, quantity + 1)}
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
       </div>
     </motion.div>
   );

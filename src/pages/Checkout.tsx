@@ -5,10 +5,7 @@ import { deliveryZones, getZoneById } from "@/data/deliveryZones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { MessageCircle, ArrowRight, ShoppingCart } from "lucide-react";
+import { MessageCircle, ArrowLeft, ArrowRight, ShoppingCart, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -16,59 +13,42 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { items, subtotal, clearCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step, setStep] = useState(1); // 1: zone, 2: location, 3: summary
 
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    whatsapp: "",
-    sameWhatsapp: true,
     zoneId: "",
-    notes: "",
-    preferredTime: "morning",
-    acceptTerms: false,
+    addressText: "",
+    googleMapsLink: "",
   });
 
   const selectedZone = formData.zoneId ? getZoneById(formData.zoneId) : null;
   const deliveryFee = selectedZone?.fee || 0;
   const total = subtotal + deliveryFee;
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleNext = () => {
+    if (step === 1) {
+      if (!formData.zoneId) {
+        toast.error("الرجاء اختيار منطقة التوصيل");
+        return;
+      }
+      setStep(2);
+    } else if (step === 2) {
+      if (!formData.addressText.trim() && !formData.googleMapsLink.trim()) {
+        toast.error("الرجاء إدخال العنوان أو رابط الموقع");
+        return;
+      }
+      setStep(3);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleBack = () => {
+    setStep((prev) => Math.max(1, prev - 1));
+  };
 
-    if (!formData.name.trim()) {
-      toast.error("الرجاء إدخال الاسم");
-      return;
-    }
-    if (!formData.phone.trim()) {
-      toast.error("الرجاء إدخال رقم الموبايل");
-      return;
-    }
-    if (!formData.zoneId) {
-      toast.error("الرجاء اختيار منطقة التوصيل");
-      return;
-    }
-    if (!formData.acceptTerms) {
-      toast.error("الرجاء الموافقة على شروط الطلب");
-      return;
-    }
-
+  const handleConfirm = () => {
     setIsSubmitting(true);
 
-    // Build WhatsApp message
-    const whatsappNumber = formData.sameWhatsapp ? formData.phone : formData.whatsapp;
     const zone = getZoneById(formData.zoneId);
-    const timeLabels: Record<string, string> = {
-      morning: "صباحاً (9-12)",
-      afternoon: "ظهراً (12-3)",
-      evening: "مساءً (3-6)",
-    };
 
     let itemsList = items
       .map(
@@ -79,11 +59,11 @@ export default function Checkout() {
       )
       .join("\n");
 
-    const message = `🛒 *طلب جديد من تازة مارت*
+    const message = `🛒 *طلب جديد من طازه مارت*
 
-👤 *الاسم:* ${formData.name}
 📍 *المنطقة:* ${zone?.nameAr || ""}
-📞 *رقم الموبايل:* ${formData.phone}
+📌 *العنوان:* ${formData.addressText}
+${formData.googleMapsLink ? `🗺 *موقع جوجل ماب:* ${formData.googleMapsLink}` : ""}
 
 📦 *تفاصيل الطلب:*
 ${itemsList}
@@ -92,21 +72,16 @@ ${itemsList}
 🚚 *رسوم التوصيل:* ${deliveryFee} ج
 ✅ *الإجمالي الكلي:* ${total} ج
 
-⏰ *وقت التسليم المفضل:* ${timeLabels[formData.preferredTime]}
-${formData.notes ? `📝 *ملاحظات:* ${formData.notes}` : ""}
-
-شكراً لتسوقك مع تازة مارت! 🌿`;
+شكراً لتسوقك مع طازه مارت! 🌿`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/201000000000?text=${encodedMessage}`;
 
-    // Store order data for confirmation page
     sessionStorage.setItem(
       "tazamart-last-order",
       JSON.stringify({
-        name: formData.name,
-        phone: formData.phone,
         zone: zone?.nameAr,
+        address: formData.addressText,
         items: items.map((i) => ({
           name: i.product.nameAr,
           qty: i.quantity,
@@ -115,14 +90,10 @@ ${formData.notes ? `📝 *ملاحظات:* ${formData.notes}` : ""}
         subtotal,
         deliveryFee,
         total,
-        preferredTime: timeLabels[formData.preferredTime],
       })
     );
 
-    // Open WhatsApp
     window.open(whatsappUrl, "_blank");
-
-    // Clear cart and navigate to confirmation
     clearCart();
     navigate("/order-confirmed");
   };
@@ -132,13 +103,9 @@ ${formData.notes ? `📝 *ملاحظات:* ${formData.notes}` : ""}
       <div className="min-h-screen flex items-center justify-center py-16">
         <div className="text-center">
           <div className="text-8xl mb-6">🛒</div>
-          <h1 className="text-3xl font-bold text-foreground mb-4">
-            السلة فاضية!
-          </h1>
-          <p className="text-muted-foreground text-xl mb-8">
-            أضف منتجات للسلة أولاً
-          </p>
-          <Link to="/shop">
+          <h1 className="text-3xl font-bold text-foreground mb-4">السلة فاضية!</h1>
+          <p className="text-muted-foreground text-xl mb-8">أضف منتجات للسلة أولاً</p>
+          <Link to="/">
             <Button variant="default" size="xl" className="gap-2">
               <ShoppingCart className="h-5 w-5" />
               ابدأ التسوق
@@ -151,282 +118,273 @@ ${formData.notes ? `📝 *ملاحظات:* ${formData.notes}` : ""}
 
   return (
     <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            إتمام الطلب 📝
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            أكمل بياناتك لتأكيد الطلب
-          </p>
+      <div className="container mx-auto px-4 max-w-2xl">
+        {/* Progress Steps */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {[1, 2, 3].map((s) => (
+            <div key={s} className="flex items-center gap-2">
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${
+                  step >= s
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-muted-foreground"
+                }`}
+              >
+                {s}
+              </div>
+              {s < 3 && (
+                <div
+                  className={`w-12 h-1 rounded ${
+                    step > s ? "bg-primary" : "bg-secondary"
+                  }`}
+                />
+              )}
+            </div>
+          ))}
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Form */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Customer Info */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-card rounded-2xl p-6"
-              >
-                <h2 className="text-2xl font-bold text-foreground mb-6">
-                  معلوماتك 👤
-                </h2>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name" className="text-lg font-medium">
-                      الاسم بالكامل *
-                    </Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      placeholder="محمد أحمد"
-                      className="mt-2 h-14 text-lg"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone" className="text-lg font-medium">
-                      رقم الموبايل *
-                    </Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="01X XXXX XXXX"
-                      className="mt-2 h-14 text-lg"
-                      dir="ltr"
-                    />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Checkbox
-                      id="sameWhatsapp"
-                      checked={formData.sameWhatsapp}
-                      onCheckedChange={(checked) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          sameWhatsapp: checked as boolean,
-                        }))
-                      }
-                    />
-                    <Label htmlFor="sameWhatsapp" className="text-lg">
-                      نفس رقم الواتساب
-                    </Label>
-                  </div>
-                  {!formData.sameWhatsapp && (
-                    <div>
-                      <Label htmlFor="whatsapp" className="text-lg font-medium">
-                        رقم الواتساب
-                      </Label>
-                      <Input
-                        id="whatsapp"
-                        name="whatsapp"
-                        type="tel"
-                        value={formData.whatsapp}
-                        onChange={handleInputChange}
-                        placeholder="01X XXXX XXXX"
-                        className="mt-2 h-14 text-lg"
-                        dir="ltr"
-                      />
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              {/* Delivery Zone */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-card rounded-2xl p-6"
-              >
-                <h2 className="text-2xl font-bold text-foreground mb-6">
-                  منطقة التوصيل 📍
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {deliveryZones
-                    .filter((z) => z.isActive)
-                    .map((zone) => (
-                      <button
-                        key={zone.id}
-                        type="button"
-                        onClick={() =>
-                          setFormData((prev) => ({ ...prev, zoneId: zone.id }))
-                        }
-                        className={`p-4 rounded-xl text-center transition-all ${
-                          formData.zoneId === zone.id
-                            ? "bg-primary text-primary-foreground shadow-fresh"
-                            : "bg-secondary text-foreground hover:bg-secondary/80"
-                        }`}
-                      >
-                        <p className="font-bold text-lg">{zone.nameAr}</p>
-                        <p
-                          className={`text-sm mt-1 ${
-                            formData.zoneId === zone.id
-                              ? "text-primary-foreground/80"
-                              : "text-muted-foreground"
-                          }`}
-                        >
-                          {zone.fee} ج توصيل
-                        </p>
-                      </button>
-                    ))}
-                </div>
-              </motion.div>
-
-              {/* Preferred Time */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-card rounded-2xl p-6"
-              >
-                <h2 className="text-2xl font-bold text-foreground mb-6">
-                  وقت التسليم المفضل ⏰
-                </h2>
-                <RadioGroup
-                  value={formData.preferredTime}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, preferredTime: value }))
-                  }
-                  className="flex flex-wrap gap-4"
-                >
-                  {[
-                    { value: "morning", label: "صباحاً (9-12)" },
-                    { value: "afternoon", label: "ظهراً (12-3)" },
-                    { value: "evening", label: "مساءً (3-6)" },
-                  ].map((time) => (
-                    <div
-                      key={time.value}
-                      className="flex items-center gap-3 bg-secondary px-4 py-3 rounded-xl"
-                    >
-                      <RadioGroupItem value={time.value} id={time.value} />
-                      <Label htmlFor={time.value} className="text-lg cursor-pointer">
-                        {time.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </motion.div>
-
-              {/* Notes */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-card rounded-2xl p-6"
-              >
-                <h2 className="text-2xl font-bold text-foreground mb-6">
-                  ملاحظات خاصة 📝
-                </h2>
-                <Textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  placeholder="أي ملاحظات على الطلب..."
-                  className="min-h-[120px] text-lg"
-                />
-              </motion.div>
-            </div>
-
-            {/* Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="bg-card rounded-2xl p-6 sticky top-24">
-                <h2 className="text-2xl font-bold text-foreground mb-6">
-                  ملخص الطلب
-                </h2>
-
-                {/* Items */}
-                <div className="space-y-3 mb-6 max-h-[300px] overflow-y-auto">
-                  {items.map((item) => (
-                    <div
-                      key={item.product.id}
-                      className="flex items-center gap-3"
-                    >
-                      <span className="text-2xl">{item.product.emoji}</span>
-                      <div className="flex-grow min-w-0">
-                        <p className="font-medium text-foreground truncate">
-                          {item.product.nameAr}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.quantity} × {item.product.price} ج
-                        </p>
-                      </div>
-                      <p className="font-bold text-foreground">
-                        {item.product.price * item.quantity} ج
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Totals */}
-                <div className="space-y-3 border-t border-border pt-4">
-                  <div className="flex justify-between text-lg">
-                    <span className="text-muted-foreground">إجمالي المنتجات</span>
-                    <span className="font-bold text-foreground">{subtotal} ج</span>
-                  </div>
-                  <div className="flex justify-between text-lg">
-                    <span className="text-muted-foreground">رسوم التوصيل</span>
-                    <span className="font-bold text-foreground">
-                      {deliveryFee > 0 ? `${deliveryFee} ج` : "اختر المنطقة"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-t border-border pt-3">
-                    <span className="text-xl font-bold text-foreground">
-                      الإجمالي الكلي
-                    </span>
-                    <span className="text-2xl font-bold text-accent">
-                      {total} ج
-                    </span>
-                  </div>
-                </div>
-
-                {/* Terms */}
-                <div className="flex items-start gap-3 mt-6">
-                  <Checkbox
-                    id="acceptTerms"
-                    checked={formData.acceptTerms}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        acceptTerms: checked as boolean,
-                      }))
+        {/* Step 1: Choose Zone */}
+        {step === 1 && (
+          <motion.div
+            key="step1"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+          >
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              اختار منطقة التوصيل 📍
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {deliveryZones
+                .filter((z) => z.isActive)
+                .map((zone) => (
+                  <button
+                    key={zone.id}
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, zoneId: zone.id }))
                     }
-                    className="mt-1"
-                  />
-                  <Label htmlFor="acceptTerms" className="text-base leading-relaxed">
-                    بأكد إن البيانات صحيحة وموافق على استلام الطلب والدفع عند
-                    الاستلام
-                  </Label>
+                    className={`p-4 rounded-xl text-center transition-all ${
+                      formData.zoneId === zone.id
+                        ? "bg-primary text-primary-foreground shadow-fresh"
+                        : "bg-card text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <p className="font-bold text-lg">{zone.nameAr}</p>
+                    <p
+                      className={`text-sm mt-1 ${
+                        formData.zoneId === zone.id
+                          ? "text-primary-foreground/80"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {zone.fee} ج توصيل
+                    </p>
+                  </button>
+                ))}
+            </div>
+            <Button
+              variant="warm"
+              size="xl"
+              className="w-full mt-8 gap-2"
+              onClick={handleNext}
+            >
+              التالي
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Step 2: Location Details */}
+        {step === 2 && (
+          <motion.div
+            key="step2"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+          >
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              العنوان بالتفصيل 📌
+            </h2>
+            <div className="space-y-6">
+              <div>
+                <Label htmlFor="addressText" className="text-lg font-medium">
+                  اكتب عنوانك
+                </Label>
+                <Input
+                  id="addressText"
+                  name="addressText"
+                  value={formData.addressText}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, addressText: e.target.value }))
+                  }
+                  placeholder="مثال: شارع 9، عمارة 15، الدور 3"
+                  className="mt-2 h-14 text-lg"
+                />
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
                 </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-background px-4 text-muted-foreground">أو</span>
+                </div>
+              </div>
 
-                {/* Submit */}
-                <Button
-                  type="submit"
-                  variant="warm"
-                  size="xl"
-                  className="w-full mt-6 gap-2"
-                  disabled={isSubmitting}
-                >
-                  <MessageCircle className="h-6 w-6" />
-                  تأكيد الطلب عبر واتساب
-                </Button>
-
-                <Link to="/cart" className="block mt-4">
-                  <Button variant="outline" size="lg" className="w-full gap-2">
-                    <ArrowRight className="h-5 w-5 rotate-180" />
-                    رجوع للسلة
-                  </Button>
-                </Link>
+              <div>
+                <Label htmlFor="googleMapsLink" className="text-lg font-medium flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  رابط جوجل ماب
+                </Label>
+                <Input
+                  id="googleMapsLink"
+                  name="googleMapsLink"
+                  value={formData.googleMapsLink}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, googleMapsLink: e.target.value }))
+                  }
+                  placeholder="https://maps.google.com/..."
+                  className="mt-2 h-14 text-lg"
+                  dir="ltr"
+                />
+                <p className="text-muted-foreground text-sm mt-2">
+                  افتح جوجل ماب → اختار موقعك → اضغط مشاركة → انسخ الرابط
+                </p>
               </div>
             </div>
-          </div>
-        </form>
+
+            <div className="flex gap-3 mt-8">
+              <Button
+                variant="outline"
+                size="xl"
+                className="flex-1 gap-2"
+                onClick={handleBack}
+              >
+                <ArrowRight className="h-5 w-5" />
+                رجوع
+              </Button>
+              <Button
+                variant="warm"
+                size="xl"
+                className="flex-1 gap-2"
+                onClick={handleNext}
+              >
+                التالي
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Step 3: Summary + Confirm */}
+        {step === 3 && (
+          <motion.div
+            key="step3"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+          >
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              ملخص الطلب ✅
+            </h2>
+
+            {/* Delivery Info */}
+            <div className="bg-card rounded-2xl p-5 mb-4">
+              <div className="flex justify-between mb-2">
+                <span className="text-muted-foreground">المنطقة</span>
+                <span className="font-bold text-foreground">{selectedZone?.nameAr}</span>
+              </div>
+              {formData.addressText && (
+                <div className="flex justify-between mb-2">
+                  <span className="text-muted-foreground">العنوان</span>
+                  <span className="font-medium text-foreground text-sm text-left max-w-[60%]">
+                    {formData.addressText}
+                  </span>
+                </div>
+              )}
+              {formData.googleMapsLink && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">الموقع</span>
+                  <a
+                    href={formData.googleMapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline text-sm"
+                  >
+                    فتح في جوجل ماب
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Items */}
+            <div className="bg-card rounded-2xl p-5 mb-4">
+              <h3 className="font-bold text-foreground mb-4">المنتجات</h3>
+              <div className="space-y-3 max-h-[250px] overflow-y-auto">
+                {items.map((item) => (
+                  <div key={item.product.id} className="flex items-center gap-3">
+                    <span className="text-2xl">{item.product.emoji}</span>
+                    <div className="flex-grow min-w-0">
+                      <p className="font-medium text-foreground truncate">
+                        {item.product.nameAr}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.quantity} × {item.product.price} ج
+                      </p>
+                    </div>
+                    <p className="font-bold text-foreground">
+                      {item.product.price * item.quantity} ج
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Totals */}
+            <div className="bg-card rounded-2xl p-5 mb-6">
+              <div className="space-y-3">
+                <div className="flex justify-between text-lg">
+                  <span className="text-muted-foreground">إجمالي المنتجات</span>
+                  <span className="font-bold text-foreground">{subtotal} ج</span>
+                </div>
+                <div className="flex justify-between text-lg">
+                  <span className="text-muted-foreground">رسوم التوصيل</span>
+                  <span className="font-bold text-foreground">{deliveryFee} ج</span>
+                </div>
+                <div className="flex justify-between border-t border-border pt-3">
+                  <span className="text-xl font-bold text-foreground">الإجمالي</span>
+                  <span className="text-2xl font-bold text-accent">{total} ج</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Confirm */}
+            <Button
+              variant="warm"
+              size="xl"
+              className="w-full gap-2"
+              onClick={handleConfirm}
+              disabled={isSubmitting}
+            >
+              <MessageCircle className="h-6 w-6" />
+              تأكيد الطلب
+            </Button>
+            <p className="text-center text-muted-foreground text-sm mt-2">
+              سيتم إرسال الطلب عبر واتساب
+            </p>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full mt-4 gap-2"
+              onClick={handleBack}
+            >
+              <ArrowRight className="h-5 w-5" />
+              رجوع
+            </Button>
+          </motion.div>
+        )}
       </div>
     </div>
   );

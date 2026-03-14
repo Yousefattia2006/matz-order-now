@@ -30,7 +30,7 @@ export function Navbar() {
           <Link to="/" className="flex items-center gap-2">
             <span className="text-3xl">🌿</span>
             <span className="text-xl md:text-2xl font-bold text-primary">
-              تازة مارت
+              طازه مارت
             </span>
           </Link>
 

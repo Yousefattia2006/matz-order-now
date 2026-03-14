@@ -45,7 +45,7 @@ export default function OrderConfirmed() {
             تم استلام طلبك! 💚
           </h1>
           <p className="text-xl text-muted-foreground">
-            شكراً لتسوقك مع تازة مارت. هنتواصل معاك قريباً
+            شكراً لتسوقك مع طازه مارت. هنتواصل معاك قريباً
           </p>
         </motion.div>
 

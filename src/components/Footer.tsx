@@ -91,7 +91,7 @@ export function Footer() {
             💳 الدفع عند الاستلام
           </p>
           <p className="text-primary-foreground/60 text-sm mt-2">
-            © {new Date().getFullYear()} تازة مارت. جميع الحقوق محفوظة.
+            © {new Date().getFullYear()} طازه مارت. جميع الحقوق محفوظة.
           </p>
         </div>
       </div>
