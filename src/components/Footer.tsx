@@ -12,7 +12,7 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-3xl">🌿</span>
-              <span className="text-2xl font-bold">تازة مارت</span>
+              <span className="text-2xl font-bold">طازه مارت</span>
             </div>
             <p className="text-primary-foreground/80 text-lg">
               طازج كل يوم، يوصلك على بابك
