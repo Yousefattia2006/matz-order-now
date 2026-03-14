@@ -5,14 +5,12 @@ import { MessageCircle, ShoppingCart, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface OrderData {
-  name: string;
-  phone: string;
   zone: string;
+  address?: string;
   items: Array<{ name: string; qty: number; price: number }>;
   subtotal: number;
   deliveryFee: number;
   total: number;
-  preferredTime: string;
 }
 
 export default function OrderConfirmed() {
@@ -45,7 +43,7 @@ export default function OrderConfirmed() {
             تم استلام طلبك! 💚
           </h1>
           <p className="text-xl text-muted-foreground">
-            شكراً لتسوقك مع تازة مارت. هنتواصل معاك قريباً
+            شكراً لتسوقك مع طازه مارت. هنتواصل معاك قريباً
           </p>
         </motion.div>
 
@@ -62,25 +60,15 @@ export default function OrderConfirmed() {
 
             <div className="space-y-4 mb-6">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">الاسم</span>
-                <span className="font-medium text-foreground">{orderData.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">رقم الموبايل</span>
-                <span className="font-medium text-foreground" dir="ltr">
-                  {orderData.phone}
-                </span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-muted-foreground">منطقة التوصيل</span>
                 <span className="font-medium text-foreground">{orderData.zone}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">وقت التسليم</span>
-                <span className="font-medium text-foreground">
-                  {orderData.preferredTime}
-                </span>
-              </div>
+              {orderData.address && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">العنوان</span>
+                  <span className="font-medium text-foreground">{orderData.address}</span>
+                </div>
+              )}
             </div>
 
             <div className="border-t border-border pt-4 mb-4">
@@ -102,15 +90,11 @@ export default function OrderConfirmed() {
             <div className="border-t border-border pt-4 space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">إجمالي المنتجات</span>
-                <span className="font-medium text-foreground">
-                  {orderData.subtotal} ج
-                </span>
+                <span className="font-medium text-foreground">{orderData.subtotal} ج</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">رسوم التوصيل</span>
-                <span className="font-medium text-foreground">
-                  {orderData.deliveryFee} ج
-                </span>
+                <span className="font-medium text-foreground">{orderData.deliveryFee} ج</span>
               </div>
               <div className="flex justify-between text-xl pt-2 border-t border-border">
                 <span className="font-bold text-foreground">الإجمالي الكلي</span>
@@ -137,8 +121,7 @@ export default function OrderConfirmed() {
               فتح واتساب
             </Button>
           </a>
-
-          <Link to="/shop">
+          <Link to="/">
             <Button variant="outline" size="xl" className="w-full gap-2">
               <ShoppingCart className="h-5 w-5" />
               تسوق تاني
@@ -153,13 +136,7 @@ export default function OrderConfirmed() {
           className="mt-12 text-center"
         >
           <div className="bg-secondary rounded-2xl p-6">
-            <p className="text-lg text-foreground mb-2">⏰ ساعات التوصيل</p>
-            <p className="text-muted-foreground">
-              السبت - الخميس: 9 صباحاً - 6 مساءً
-            </p>
-            <p className="text-primary font-bold mt-4">
-              💳 الدفع عند الاستلام
-            </p>
+            <p className="text-primary font-bold mt-2">💳 الدفع عند الاستلام</p>
           </div>
         </motion.div>
       </div>
