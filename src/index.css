@@ -20,9 +20,9 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 6 63% 46%;
     --destructive-foreground: 0 0% 100%;
-    --border: 130 20% 85%;
-    --input: 130 20% 85%;
-    --ring: 130 46% 33%;
+    --border: 255 20% 85%;
+    --input: 255 20% 85%;
+    --ring: 255 89% 60%;
     --radius: 0.75rem;
     
     --gold: 38 81% 52%;
