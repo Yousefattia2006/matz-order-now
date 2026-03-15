@@ -1,19 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { deliveryZones, getZoneById } from "@/data/deliveryZones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MessageCircle, ArrowLeft, ArrowRight, ShoppingCart, MapPin } from "lucide-react";
+import { MessageCircle, ArrowLeft, ArrowRight, ShoppingCart, MapPin, Plus, Minus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+
+function CheckoutItemImage({ product }: { product: { imageUrl?: string; emoji: string; nameAr: string } }) {
+  const [imgError, setImgError] = useState(false);
+  return product.imageUrl && !imgError ? (
+    <img
+      src={product.imageUrl}
+      alt={product.nameAr}
+      className="w-full h-full object-cover"
+      onError={() => setImgError(true)}
+    />
+  ) : (
+    <span className="text-2xl">{product.emoji}</span>
+  );
+}
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, subtotal, clearCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [step, setStep] = useState(1); // 1: zone, 2: location, 3: summary
+  const [step, setStep] = useState(1);
 
   const [formData, setFormData] = useState({
     zoneId: "",
@@ -24,6 +38,11 @@ export default function Checkout() {
   const selectedZone = formData.zoneId ? getZoneById(formData.zoneId) : null;
   const deliveryFee = selectedZone?.fee || 0;
   const total = subtotal + deliveryFee;
+
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   const handleNext = () => {
     if (step === 1) {
@@ -59,7 +78,7 @@ export default function Checkout() {
       )
       .join("\n");
 
-    const message = `🛒 *طلب جديد من طازه مارت*
+    const message = `🛒 *طلب جديد من TazaMart*
 
 📍 *المنطقة:* ${zone?.nameAr || ""}
 📌 *العنوان:* ${formData.addressText}
@@ -72,10 +91,10 @@ ${itemsList}
 🚚 *رسوم التوصيل:* ${deliveryFee} ج
 ✅ *الإجمالي الكلي:* ${total} ج
 
-شكراً لتسوقك مع طازه مارت! 🌿`;
+شكراً لتسوقك مع TazaMart! 💜`;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/201000000000?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/201093363030?text=${encodedMessage}`;
 
     sessionStorage.setItem(
       "tazamart-last-order",
@@ -223,15 +242,6 @@ ${itemsList}
                 />
               </div>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-background px-4 text-muted-foreground">أو</span>
-                </div>
-              </div>
-
               <div>
                 <Label htmlFor="googleMapsLink" className="text-lg font-medium flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-primary" />
@@ -245,7 +255,7 @@ ${itemsList}
                     setFormData((prev) => ({ ...prev, googleMapsLink: e.target.value }))
                   }
                   placeholder="https://maps.google.com/..."
-                  className="mt-2 h-14 text-lg"
+                  className="mt-2 h-14 text-lg w-full overflow-hidden text-ellipsis"
                   dir="ltr"
                 />
                 <p className="text-muted-foreground text-sm mt-2">
@@ -318,22 +328,24 @@ ${itemsList}
               )}
             </div>
 
-            {/* Items */}
+            {/* Items - same style as cart */}
             <div className="bg-card rounded-2xl p-5 mb-4">
               <h3 className="font-bold text-foreground mb-4">المنتجات</h3>
-              <div className="space-y-3 max-h-[250px] overflow-y-auto">
+              <div className="space-y-3 max-h-[300px] overflow-y-auto">
                 {items.map((item) => (
                   <div key={item.product.id} className="flex items-center gap-3">
-                    <span className="text-2xl">{item.product.emoji}</span>
+                    <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-secondary/50 flex items-center justify-center">
+                      <CheckoutItemImage product={item.product} />
+                    </div>
                     <div className="flex-grow min-w-0">
-                      <p className="font-medium text-foreground truncate">
+                      <p className="font-bold text-foreground truncate text-sm">
                         {item.product.nameAr}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {item.quantity} × {item.product.price} ج
                       </p>
                     </div>
-                    <p className="font-bold text-foreground">
+                    <p className="font-bold text-foreground text-sm">
                       {item.product.price * item.quantity} ج
                     </p>
                   </div>

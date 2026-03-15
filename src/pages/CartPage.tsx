@@ -5,6 +5,20 @@ import { Trash2, Plus, Minus, ShoppingCart, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
+function CartItemImage({ item }: { item: { product: { imageUrl?: string; emoji: string; nameAr: string } } }) {
+  const [imgError, setImgError] = useState(false);
+  return item.product.imageUrl && !imgError ? (
+    <img
+      src={item.product.imageUrl}
+      alt={item.product.nameAr}
+      className="w-full h-full object-cover"
+      onError={() => setImgError(true)}
+    />
+  ) : (
+    <span className="text-3xl md:text-4xl">{item.product.emoji}</span>
+  );
+}
+
 export default function CartPage() {
   const { items, removeItem, updateQuantity, subtotal, clearCart } = useCart();
 
@@ -61,79 +75,67 @@ export default function CartPage() {
 
         {/* Cart Items */}
         <div className="space-y-4 mb-8">
-          {items.map((item, index) => {
-            const [imgError, setImgError] = useState(false);
-            return (
-              <motion.div
-                key={item.product.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-card rounded-2xl p-4 flex items-center gap-4"
-              >
-                {/* Product Image */}
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-secondary/50 flex items-center justify-center">
-                  {item.product.imageUrl && !imgError ? (
-                    <img
-                      src={item.product.imageUrl}
-                      alt={item.product.nameAr}
-                      className="w-full h-full object-cover"
-                      onError={() => setImgError(true)}
-                    />
-                  ) : (
-                    <span className="text-3xl md:text-4xl">{item.product.emoji}</span>
-                  )}
-                </div>
+          {items.map((item, index) => (
+            <motion.div
+              key={item.product.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-card rounded-2xl p-4 flex items-center gap-4"
+            >
+              {/* Product Image */}
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-secondary/50 flex items-center justify-center">
+                <CartItemImage item={item} />
+              </div>
 
-                {/* Product Info */}
-                <div className="flex-grow min-w-0">
-                  <h3 className="font-bold text-foreground text-base md:text-lg truncate">
-                    {item.product.nameAr}
-                  </h3>
-                  <p className="text-accent font-bold text-lg mt-1">
-                    {item.product.price * item.quantity} ج
-                  </p>
-                </div>
+              {/* Product Info */}
+              <div className="flex-grow min-w-0">
+                <h3 className="font-bold text-foreground text-base md:text-lg truncate">
+                  {item.product.nameAr}
+                </h3>
+                <p className="text-accent font-bold text-lg mt-1">
+                  {item.product.price * item.quantity} ج
+                </p>
+              </div>
 
-                {/* Quantity Controls */}
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10"
-                    onClick={() =>
-                      updateQuantity(item.product.id, item.quantity - 1)
-                    }
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="w-10 text-center text-lg font-bold text-foreground">
-                    {item.quantity}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-10 w-10"
-                    onClick={() =>
-                      updateQuantity(item.product.id, item.quantity + 1)
-                    }
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Remove */}
+              {/* Quantity Controls */}
+              <div className="flex items-center gap-1">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="icon"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10 flex-shrink-0 h-10 w-10"
-                  onClick={() => removeItem(item.product.id)}
+                  className="h-10 w-10"
+                  onClick={() =>
+                    updateQuantity(item.product.id, item.quantity - 1)
+                  }
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Minus className="h-4 w-4" />
                 </Button>
-              </motion.div>
-            );
-          })}
+                <span className="w-10 text-center text-lg font-bold text-foreground">
+                  {item.quantity}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10"
+                  onClick={() =>
+                    updateQuantity(item.product.id, item.quantity + 1)
+                  }
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Remove */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 flex-shrink-0 h-10 w-10"
+                onClick={() => removeItem(item.product.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </motion.div>
+          ))}
         </div>
 
         {/* Summary + Next */}

@@ -40,10 +40,10 @@ export default function OrderConfirmed() {
             <CheckCircle className="w-16 h-16 text-primary" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            تم استلام طلبك! 💚
+            تم استلام طلبك! 💜
           </h1>
           <p className="text-xl text-muted-foreground">
-            شكراً لتسوقك مع طازه مارت. هنتواصل معاك قريباً
+            شكراً لتسوقك مع TazaMart. هنتواصل معاك قريباً
           </p>
         </motion.div>
 
@@ -111,7 +111,7 @@ export default function OrderConfirmed() {
           className="space-y-4"
         >
           <a
-            href="https://wa.me/201000000000"
+            href="https://wa.me/201093363030"
             target="_blank"
             rel="noopener noreferrer"
             className="block"
