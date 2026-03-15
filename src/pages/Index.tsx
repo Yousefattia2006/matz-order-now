@@ -20,7 +20,7 @@ export default function Index() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-1">
-            طازج كل يوم 🌿
+            طازج كل يوم 💜
           </h1>
           <p className="text-muted-foreground text-base md:text-lg">
             اختار من منتجاتنا الطازجة واطلب دلوقتي

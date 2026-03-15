@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Phone, MessageCircle, MapPin } from "lucide-react";
 
 export function Footer() {
-  const whatsappNumber = "+201000000000";
+  const whatsappNumber = "201093363030";
 
   return (
     <footer className="bg-primary text-primary-foreground py-12 mt-16">
@@ -11,8 +11,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-3xl">🌿</span>
-              <span className="text-2xl font-bold">طازه مارت</span>
+              <span className="text-2xl font-bold">TazaMart</span>
             </div>
             <p className="text-primary-foreground/80 text-lg">
               طازج كل يوم، يوصلك على بابك
@@ -57,17 +56,17 @@ export function Footer() {
               <li className="flex items-center gap-3">
                 <Phone className="h-5 w-5" />
                 <a
-                  href="tel:+201000000000"
+                  href="tel:+201093363030"
                   className="text-primary-foreground/80 hover:text-primary-foreground text-lg"
                   dir="ltr"
                 >
-                  +20 100 000 0000
+                  +20 109 336 3030
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <MessageCircle className="h-5 w-5" />
                 <a
-                  href={`https://wa.me/${whatsappNumber.replace("+", "")}`}
+                  href={`https://wa.me/${whatsappNumber}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary-foreground/80 hover:text-primary-foreground text-lg"
@@ -91,7 +90,7 @@ export function Footer() {
             💳 الدفع عند الاستلام
           </p>
           <p className="text-primary-foreground/60 text-sm mt-2">
-            © {new Date().getFullYear()} طازه مارت. جميع الحقوق محفوظة.
+            © {new Date().getFullYear()} TazaMart. جميع الحقوق محفوظة.
           </p>
         </div>
       </div>
