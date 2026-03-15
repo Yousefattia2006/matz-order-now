@@ -3,16 +3,16 @@ TazaMart design system, architecture, and project constraints
 # TazaMart Design System
 
 ## Brand
-- Name: TazaMart / طازه مارت
+- Name: TazaMart
 - Tagline: طازج كل يوم، يوصلك على بابك
 - Arabic RTL primary, dir="rtl" on html
+- WhatsApp: 201093363030
 
 ## Colors (HSL in index.css)
-- Primary green: 130 46% 33% (#2D7A3A)
+- Primary purple: 255 89% 60% (#723DF4)
 - Accent orange: 28 91% 54% (#F4821F)  
 - Background cream: 40 69% 97% (#FDFAF4)
-- Foreground deep green: 129 38% 16%
-- Card light green: 120 36% 95%
+- Card light purple: 250 36% 97%
 - Gold: 38 81% 52%
 - Destructive/meat red: 6 63% 46%
 
@@ -24,12 +24,14 @@ TazaMart design system, architecture, and project constraints
 - Large text (18px+ body), prices bold orange
 - Target users: Egyptian mothers, elderly women
 - ProductCard shows +1/-1 when item in cart
+- No leaf logo beside brand name
 
 ## Architecture
 - Cart: Context + localStorage (no backend yet)
-- WhatsApp ordering via wa.me URL scheme
+- WhatsApp ordering via wa.me URL scheme to 201093363030
 - Multi-step checkout: zone → address/google maps → summary → confirm via WhatsApp
 - No customer name/phone/notes/delivery time in checkout (removed)
-- Categories in src/data/categories.ts
-- Products in src/data/products.ts (80+ items, with imageUrl from Unsplash)
-- Delivery zones in src/data/deliveryZones.ts
+- No terms & conditions
+- CartBar: no إتمام الطلب button, just shows count/total
+- Checkout scrolls to top on step change
+- Cart summary shows product images same as cart page
