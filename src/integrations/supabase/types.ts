@@ -14,16 +14,169 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          color: string
+          created_at: string
+          emoji: string
+          id: string
+          name_ar: string
+          name_en: string | null
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          emoji?: string
+          id: string
+          name_ar: string
+          name_en?: string | null
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          name_ar?: string
+          name_en?: string | null
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category_id: string
+          created_at: string
+          emoji: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          is_featured: boolean
+          name_ar: string
+          name_en: string | null
+          price: number
+          unit: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          name_ar: string
+          name_en?: string | null
+          price?: number
+          unit?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          name_ar?: string
+          name_en?: string | null
+          price?: number
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      special_offers: {
+        Row: {
+          created_at: string
+          description_ar: string | null
+          discount_percent: number | null
+          end_date: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          product_id: string | null
+          start_date: string
+          title_ar: string
+        }
+        Insert: {
+          created_at?: string
+          description_ar?: string | null
+          discount_percent?: number | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          product_id?: string | null
+          start_date?: string
+          title_ar: string
+        }
+        Update: {
+          created_at?: string
+          description_ar?: string | null
+          discount_percent?: number | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          product_id?: string | null
+          start_date?: string
+          title_ar?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "special_offers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +303,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
