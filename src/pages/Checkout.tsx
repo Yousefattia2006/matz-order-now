@@ -72,7 +72,7 @@ export default function Checkout() {
     let itemsList = items
       .map(
         (item) =>
-          `- ${item.product.nameAr} × ${item.quantity} = ${
+          `- ${item.product.name_ar} × ${item.quantity} = ${
             item.product.price * item.quantity
           } ج`
       )
