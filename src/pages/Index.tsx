@@ -1,23 +1,38 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ProductCard } from "@/components/ProductCard";
-import { categories } from "@/data/categories";
-import { getActiveProducts, getProductsByCategory } from "@/data/products";
+import { SpecialOfferPopup } from "@/components/SpecialOfferPopup";
 import { motion } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const products = useMemo(() => {
-    if (selectedCategory) {
-      return getProductsByCategory(selectedCategory);
-    }
-    return getActiveProducts();
-  }, [selectedCategory]);
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("*").order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["products", selectedCategory],
+    queryFn: async () => {
+      let query = supabase.from("products").select("*").eq("is_active", true);
+      if (selectedCategory) query = query.eq("category_id", selectedCategory);
+      const { data, error } = await query.order("created_at");
+      if (error) throw error;
+      return data;
+    },
+  });
 
   return (
     <div className="min-h-screen py-4 md:py-8">
+      <SpecialOfferPopup />
       <div className="container mx-auto px-4">
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-1">
             طازج كل يوم 💜
@@ -27,7 +42,6 @@ export default function Index() {
           </p>
         </div>
 
-        {/* Category Filter Buttons */}
         <div className="mb-6 -mx-4 px-4 overflow-x-auto">
           <div className="flex gap-2 md:gap-3 pb-2 min-w-max">
             <button
@@ -51,14 +65,19 @@ export default function Index() {
                 }`}
               >
                 <span>{category.emoji}</span>
-                <span>{category.nameAr}</span>
+                <span>{category.name_ar}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Product Grid */}
-        {products.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-square rounded-2xl" />
+            ))}
+          </div>
+        ) : products.length > 0 ? (
           <motion.div
             key={selectedCategory || "all"}
             initial={{ opacity: 0 }}
@@ -79,16 +98,11 @@ export default function Index() {
         ) : (
           <div className="text-center py-16">
             <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-2xl font-bold text-foreground mb-2">
-              لا توجد منتجات متاحة
-            </h3>
-            <p className="text-muted-foreground text-lg">
-              جرب اختيار قسم تاني
-            </p>
+            <h3 className="text-2xl font-bold text-foreground mb-2">لا توجد منتجات متاحة</h3>
+            <p className="text-muted-foreground text-lg">جرب اختيار قسم تاني</p>
           </div>
         )}
 
-        {/* Product Count */}
         <div className="mt-6 text-center">
           <p className="text-muted-foreground">{products.length} منتج متاح</p>
         </div>

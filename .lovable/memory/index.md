@@ -1,37 +1,22 @@
-TazaMart design system, architecture, and project constraints
-
-# TazaMart Design System
+Design system, constraints, and architecture for TazaMart
 
 ## Brand
-- Name: TazaMart
-- Tagline: طازج كل يوم، يوصلك على بابك
-- Arabic RTL primary, dir="rtl" on html
-- WhatsApp: 201093363030
-
-## Colors (HSL in index.css)
+- Name: TazaMart / تازة مارت
 - Primary purple: 255 89% 60% (#723DF4)
-- Accent orange: 28 91% 54% (#F4821F)  
-- Background cream: 40 69% 97% (#FDFAF4)
-- Card light purple: 250 36% 97%
-- Gold: 38 81% 52%
-- Destructive/meat red: 6 63% 46%
-
-## Fonts
-- Cairo (Arabic primary), DM Sans (English)
-
-## UI Rules
-- Min touch target 52px, buttons 56px
-- Large text (18px+ body), prices bold orange
-- Target users: Egyptian mothers, elderly women
-- ProductCard shows +1/-1 when item in cart
-- No leaf logo beside brand name
+- Accent orange: 28 91% 54%
+- Background cream: 40 69% 97%
+- Fonts: Cairo (AR), DM Sans (EN)
+- WhatsApp: 01093363030
 
 ## Architecture
-- Cart: Context + localStorage (no backend yet)
-- WhatsApp ordering via wa.me URL scheme to 201093363030
-- Multi-step checkout: zone → address/google maps → summary → confirm via WhatsApp
-- No customer name/phone/notes/delivery time in checkout (removed)
-- No terms & conditions
-- CartBar: no إتمام الطلب button, just shows count/total
-- Checkout scrolls to top on step change
-- Cart summary shows product images same as cart page
+- Backend: Supabase (products, categories, special_offers, user_roles tables)
+- Product type: Tables<"products"> from supabase types (name_ar, image_url, NOT nameAr/imageUrl)
+- Cart: Context + localStorage, uses Supabase product type
+- Admin: /admin/* routes (LTR, no navbar/footer), protected by has_role() check
+- Storage: product-images bucket (public) for admin uploads
+- Special offers popup on first visit (sessionStorage flag)
+
+## Removed
+- Leaf logo next to brand name
+- CartBar checkout button (إتمام الطلب)
+- Static data files (src/data/products.ts, src/data/categories.ts) - now from Supabase

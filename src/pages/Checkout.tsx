@@ -9,12 +9,12 @@ import { MessageCircle, ArrowLeft, ArrowRight, ShoppingCart, MapPin, Plus, Minus
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
-function CheckoutItemImage({ product }: { product: { imageUrl?: string; emoji: string; nameAr: string } }) {
+function CheckoutItemImage({ product }: { product: { image_url?: string | null; emoji: string; name_ar: string } }) {
   const [imgError, setImgError] = useState(false);
-  return product.imageUrl && !imgError ? (
+  return product.image_url && !imgError ? (
     <img
-      src={product.imageUrl}
-      alt={product.nameAr}
+      src={product.image_url}
+      alt={product.name_ar}
       className="w-full h-full object-cover"
       onError={() => setImgError(true)}
     />
@@ -72,7 +72,7 @@ export default function Checkout() {
     let itemsList = items
       .map(
         (item) =>
-          `- ${item.product.nameAr} × ${item.quantity} = ${
+          `- ${item.product.name_ar} × ${item.quantity} = ${
             item.product.price * item.quantity
           } ج`
       )
@@ -102,7 +102,7 @@ ${itemsList}
         zone: zone?.nameAr,
         address: formData.addressText,
         items: items.map((i) => ({
-          name: i.product.nameAr,
+          name: i.product.name_ar,
           qty: i.quantity,
           price: i.product.price,
         })),
@@ -339,7 +339,7 @@ ${itemsList}
                     </div>
                     <div className="flex-grow min-w-0">
                       <p className="font-bold text-foreground truncate text-sm">
-                        {item.product.nameAr}
+                        {item.product.name_ar}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {item.quantity} × {item.product.price} ج
