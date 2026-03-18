@@ -5,12 +5,12 @@ import { Trash2, Plus, Minus, ShoppingCart, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
-function CartItemImage({ item }: { item: { product: { imageUrl?: string; emoji: string; nameAr: string } } }) {
+function CartItemImage({ item }: { item: { product: { image_url?: string | null; emoji: string; name_ar: string } } }) {
   const [imgError, setImgError] = useState(false);
-  return item.product.imageUrl && !imgError ? (
+  return item.product.image_url && !imgError ? (
     <img
-      src={item.product.imageUrl}
-      alt={item.product.nameAr}
+      src={item.product.image_url}
+      alt={item.product.name_ar}
       className="w-full h-full object-cover"
       onError={() => setImgError(true)}
     />
