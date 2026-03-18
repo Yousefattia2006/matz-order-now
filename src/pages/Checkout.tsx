@@ -102,7 +102,7 @@ ${itemsList}
         zone: zone?.nameAr,
         address: formData.addressText,
         items: items.map((i) => ({
-          name: i.product.nameAr,
+          name: i.product.name_ar,
           qty: i.quantity,
           price: i.product.price,
         })),
