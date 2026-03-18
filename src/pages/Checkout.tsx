@@ -339,7 +339,7 @@ ${itemsList}
                     </div>
                     <div className="flex-grow min-w-0">
                       <p className="font-bold text-foreground truncate text-sm">
-                        {item.product.nameAr}
+                        {item.product.name_ar}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {item.quantity} × {item.product.price} ج

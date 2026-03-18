@@ -91,7 +91,7 @@ export default function CartPage() {
               {/* Product Info */}
               <div className="flex-grow min-w-0">
                 <h3 className="font-bold text-foreground text-base md:text-lg truncate">
-                  {item.product.nameAr}
+                  {item.product.name_ar}
                 </h3>
                 <p className="text-accent font-bold text-lg mt-1">
                   {item.product.price * item.quantity} ج
