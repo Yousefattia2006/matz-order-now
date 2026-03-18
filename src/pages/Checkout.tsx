@@ -9,12 +9,12 @@ import { MessageCircle, ArrowLeft, ArrowRight, ShoppingCart, MapPin, Plus, Minus
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
-function CheckoutItemImage({ product }: { product: { imageUrl?: string; emoji: string; nameAr: string } }) {
+function CheckoutItemImage({ product }: { product: { image_url?: string | null; emoji: string; name_ar: string } }) {
   const [imgError, setImgError] = useState(false);
-  return product.imageUrl && !imgError ? (
+  return product.image_url && !imgError ? (
     <img
-      src={product.imageUrl}
-      alt={product.nameAr}
+      src={product.image_url}
+      alt={product.name_ar}
       className="w-full h-full object-cover"
       onError={() => setImgError(true)}
     />
