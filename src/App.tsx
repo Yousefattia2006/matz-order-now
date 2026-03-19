@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
+import { AdminProvider } from "@/hooks/useAdmin";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CartBar } from "@/components/CartBar";
@@ -27,43 +28,45 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <CartProvider>
-        <Toaster />
-        <Sonner position="top-center" richColors />
-        <BrowserRouter>
-          <Routes>
-            {/* Admin routes - no navbar/footer */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="products" element={<AdminProducts />} />
-              <Route path="categories" element={<AdminCategories />} />
-              <Route path="offers" element={<AdminOffers />} />
-            </Route>
+        <AdminProvider>
+          <Toaster />
+          <Sonner position="top-center" richColors />
+          <BrowserRouter>
+            <Routes>
+              {/* Admin routes */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="products" element={<AdminProducts />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="offers" element={<AdminOffers />} />
+              </Route>
 
-            {/* Storefront routes */}
-            <Route
-              path="*"
-              element={
-                <div className="min-h-screen flex flex-col">
-                  <Navbar />
-                  <main className="flex-grow pb-20 md:pb-0">
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/shop" element={<Shop />} />
-                      <Route path="/cart" element={<CartPage />} />
-                      <Route path="/checkout" element={<Checkout />} />
-                      <Route path="/order-confirmed" element={<OrderConfirmed />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                  <CartBar />
-                  <WhatsAppFloat />
-                </div>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
+              {/* Storefront routes */}
+              <Route
+                path="*"
+                element={
+                  <div className="min-h-screen flex flex-col">
+                    <Navbar />
+                    <main className="flex-grow pb-20 md:pb-0">
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/shop" element={<Shop />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/checkout" element={<Checkout />} />
+                        <Route path="/order-confirmed" element={<OrderConfirmed />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </main>
+                    <Footer />
+                    <CartBar />
+                    <WhatsAppFloat />
+                  </div>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </AdminProvider>
       </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>

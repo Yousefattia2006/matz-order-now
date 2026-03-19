@@ -1,40 +1,32 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { categories as initialCategories, Category } from "@/data/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import type { Tables } from "@/integrations/supabase/types";
-
-type Category = Tables<"categories">;
 
 export default function AdminCategories() {
-  const queryClient = useQueryClient();
+  const [categoryList, setCategoryList] = useState<Category[]>(initialCategories);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
 
-  const { data: categories = [], isLoading } = useQuery({
-    queryKey: ["admin-categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("categories").select("*").order("sort_order");
-      if (error) throw error;
-      return data;
-    },
-  });
+  const handleDelete = (id: string) => {
+    setCategoryList((prev) => prev.filter((c) => c.id !== id));
+    toast.success("Category deleted");
+  };
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("categories").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-      toast.success("Category deleted");
-    },
-    onError: (err: Error) => toast.error(err.message),
-  });
+  const handleSave = (cat: Category, isEdit: boolean) => {
+    if (isEdit) {
+      setCategoryList((prev) => prev.map((c) => (c.id === cat.id ? cat : c)));
+      toast.success("Category updated");
+    } else {
+      setCategoryList((prev) => [...prev, cat]);
+      toast.success("Category created");
+    }
+    setDialogOpen(false);
+    setEditing(null);
+  };
 
   return (
     <div>
@@ -45,90 +37,60 @@ export default function AdminCategories() {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-12 text-muted-foreground">Loading...</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map((cat) => (
-            <div key={cat.id} className="bg-card rounded-2xl border border-border p-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">{cat.emoji}</span>
-                <div>
-                  <p className="font-bold text-foreground">{cat.name_ar}</p>
-                  <p className="text-sm text-muted-foreground">{cat.name_en} · {cat.slug}</p>
-                </div>
-              </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" onClick={() => { setEditing(cat); setDialogOpen(true); }}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(cat.id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {categoryList.map((cat) => (
+          <div key={cat.id} className="bg-card rounded-2xl border border-border p-5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{cat.emoji}</span>
+              <div>
+                <p className="font-bold text-foreground">{cat.nameAr}</p>
+                <p className="text-sm text-muted-foreground">{cat.nameEn} · {cat.slug}</p>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+            <div className="flex gap-1">
+              <Button variant="ghost" size="icon" onClick={() => { setEditing(cat); setDialogOpen(true); }}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => handleDelete(cat.id)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
 
-      <CategoryFormDialog open={dialogOpen} onOpenChange={setDialogOpen} category={editing} />
+      <CategoryFormDialog open={dialogOpen} onOpenChange={setDialogOpen} category={editing} onSave={handleSave} />
     </div>
   );
 }
 
 function CategoryFormDialog({
-  open, onOpenChange, category,
+  open, onOpenChange, category, onSave,
 }: {
-  open: boolean; onOpenChange: (v: boolean) => void; category: Category | null;
+  open: boolean; onOpenChange: (v: boolean) => void; category: Category | null; onSave: (c: Category, isEdit: boolean) => void;
 }) {
-  const queryClient = useQueryClient();
   const isEdit = !!category;
 
-  const [nameAr, setNameAr] = useState(category?.name_ar ?? "");
-  const [nameEn, setNameEn] = useState(category?.name_en ?? "");
+  const [nameAr, setNameAr] = useState(category?.nameAr ?? "");
+  const [nameEn, setNameEn] = useState(category?.nameEn ?? "");
   const [emoji, setEmoji] = useState(category?.emoji ?? "📦");
   const [slug, setSlug] = useState(category?.slug ?? "");
   const [color, setColor] = useState(category?.color ?? "bg-gray-100");
-  const [sortOrder, setSortOrder] = useState(category?.sort_order?.toString() ?? "0");
-  const [submitting, setSubmitting] = useState(false);
 
   const resetForm = () => {
-    setNameAr(category?.name_ar ?? "");
-    setNameEn(category?.name_en ?? "");
+    setNameAr(category?.nameAr ?? "");
+    setNameEn(category?.nameEn ?? "");
     setEmoji(category?.emoji ?? "📦");
     setSlug(category?.slug ?? "");
     setColor(category?.color ?? "bg-gray-100");
-    setSortOrder(category?.sort_order?.toString() ?? "0");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
-    const id = slug.toLowerCase().replace(/\s+/g, "-");
-
-    const payload = {
-      name_ar: nameAr,
-      name_en: nameEn || null,
-      emoji,
-      slug: id,
-      color,
-      sort_order: parseInt(sortOrder),
-    };
-
-    if (isEdit && category) {
-      const { error } = await supabase.from("categories").update(payload).eq("id", category.id);
-      if (error) { toast.error(error.message); setSubmitting(false); return; }
-      toast.success("Category updated");
-    } else {
-      const { error } = await supabase.from("categories").insert({ ...payload, id });
-      if (error) { toast.error(error.message); setSubmitting(false); return; }
-      toast.success("Category created");
-    }
-
-    queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-    onOpenChange(false);
+    const id = isEdit && category ? category.id : slug.toLowerCase().replace(/\s+/g, "-");
+    const cat: Category = { id, nameAr, nameEn, emoji, slug: id, color };
+    onSave(cat, isEdit);
     resetForm();
-    setSubmitting(false);
   };
 
   return (
@@ -156,16 +118,12 @@ function CategoryFormDialog({
               <Input value={slug} onChange={(e) => setSlug(e.target.value)} required disabled={isEdit} />
             </div>
             <div>
-              <label className="text-sm font-medium">Sort Order</label>
-              <Input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
+              <label className="text-sm font-medium">Color Class</label>
+              <Input value={color} onChange={(e) => setColor(e.target.value)} placeholder="bg-green-100" />
             </div>
           </div>
-          <div>
-            <label className="text-sm font-medium">Color Class</label>
-            <Input value={color} onChange={(e) => setColor(e.target.value)} placeholder="bg-green-100" />
-          </div>
-          <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? "Saving..." : isEdit ? "Update" : "Create"}
+          <Button type="submit" className="w-full">
+            {isEdit ? "Update" : "Create"}
           </Button>
         </form>
       </DialogContent>

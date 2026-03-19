@@ -11,24 +11,15 @@ const navItems = [
 ];
 
 export default function AdminLayout() {
-  const { user, isAdmin, loading, signOut } = useAdmin();
+  const { isLoggedIn, logout } = useAdmin();
   const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!user || !isAdmin) {
+  if (!isLoggedIn) {
     return <Navigate to="/admin/login" replace />;
   }
 
   return (
     <div className="min-h-screen flex bg-background" dir="ltr">
-      {/* Sidebar */}
       <aside className="w-64 bg-card border-r border-border flex flex-col shrink-0">
         <div className="p-6 border-b border-border">
           <h1 className="text-xl font-bold text-primary">TazaMart Admin</h1>
@@ -53,14 +44,12 @@ export default function AdminLayout() {
           })}
         </nav>
         <div className="p-4 border-t border-border">
-          <Button variant="ghost" className="w-full justify-start gap-2" onClick={signOut}>
+          <Button variant="ghost" className="w-full justify-start gap-2" onClick={logout}>
             <LogOut className="h-4 w-4" />
             Sign Out
           </Button>
         </div>
       </aside>
-
-      {/* Main Content */}
       <main className="flex-1 overflow-auto p-6 md:p-8">
         <Outlet />
       </main>
