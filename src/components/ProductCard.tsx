@@ -3,9 +3,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Plus, Minus } from "lucide-react";
 import { useState } from "react";
-import type { Tables } from "@/integrations/supabase/types";
-
-type Product = Tables<"products">;
+import type { Product } from "@/data/products";
 
 interface ProductCardProps {
   product: Product;
@@ -27,10 +25,10 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
       className="bg-card rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow"
     >
       <div className="relative w-full aspect-square bg-secondary/50 flex items-center justify-center overflow-hidden">
-        {product.image_url && !imgError ? (
+        {product.imageUrl && !imgError ? (
           <img
-            src={product.image_url}
-            alt={product.name_ar}
+            src={product.imageUrl}
+            alt={product.nameAr}
             className="w-full h-full object-cover"
             loading="lazy"
             onError={() => setImgError(true)}
@@ -48,7 +46,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
             compact ? "text-sm" : "text-base md:text-lg"
           }`}
         >
-          {product.name_ar}
+          {product.nameAr}
         </h3>
         <p className="text-muted-foreground text-xs mt-1">{product.unit}</p>
         <p

@@ -1,36 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { products } from "@/data/products";
+import { categories } from "@/data/categories";
 import { Package, FolderTree, Tag } from "lucide-react";
 
 export default function AdminDashboard() {
-  const { data: productCount } = useQuery({
-    queryKey: ["admin-product-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("products").select("*", { count: "exact", head: true });
-      return count ?? 0;
-    },
-  });
-
-  const { data: categoryCount } = useQuery({
-    queryKey: ["admin-category-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("categories").select("*", { count: "exact", head: true });
-      return count ?? 0;
-    },
-  });
-
-  const { data: offerCount } = useQuery({
-    queryKey: ["admin-offer-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("special_offers").select("*", { count: "exact", head: true }).eq("is_active", true);
-      return count ?? 0;
-    },
-  });
-
   const stats = [
-    { label: "Products", value: productCount ?? 0, icon: Package, color: "text-primary" },
-    { label: "Categories", value: categoryCount ?? 0, icon: FolderTree, color: "text-accent" },
-    { label: "Active Offers", value: offerCount ?? 0, icon: Tag, color: "text-destructive" },
+    { label: "Products", value: products.length, icon: Package, color: "text-primary" },
+    { label: "Categories", value: categories.length, icon: FolderTree, color: "text-accent" },
+    { label: "Active Offers", value: 0, icon: Tag, color: "text-destructive" },
   ];
 
   return (

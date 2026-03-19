@@ -5,12 +5,12 @@ import { Trash2, Plus, Minus, ShoppingCart, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
-function CartItemImage({ item }: { item: { product: { image_url?: string | null; emoji: string; name_ar: string } } }) {
+function CartItemImage({ item }: { item: { product: { imageUrl?: string; emoji: string; nameAr: string } } }) {
   const [imgError, setImgError] = useState(false);
-  return item.product.image_url && !imgError ? (
+  return item.product.imageUrl && !imgError ? (
     <img
-      src={item.product.image_url}
-      alt={item.product.name_ar}
+      src={item.product.imageUrl}
+      alt={item.product.nameAr}
       className="w-full h-full object-cover"
       onError={() => setImgError(true)}
     />
@@ -26,19 +26,11 @@ export default function CartPage() {
     return (
       <div className="min-h-screen flex items-center justify-center py-16">
         <div className="text-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="text-8xl mb-6"
-          >
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-8xl mb-6">
             🛒
           </motion.div>
-          <h1 className="text-3xl font-bold text-foreground mb-4">
-            السلة فاضية!
-          </h1>
-          <p className="text-muted-foreground text-xl mb-8">
-            ابدأ التسوق وأضف منتجات للسلة
-          </p>
+          <h1 className="text-3xl font-bold text-foreground mb-4">السلة فاضية!</h1>
+          <p className="text-muted-foreground text-xl mb-8">ابدأ التسوق وأضف منتجات للسلة</p>
           <Link to="/shop">
             <Button variant="default" size="xl" className="gap-2">
               <ShoppingCart className="h-5 w-5" />
@@ -53,15 +45,10 @@ export default function CartPage() {
   return (
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 max-w-2xl">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              سلة مشترياتك 🛒
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              {items.length} منتج في السلة
-            </p>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">سلة مشترياتك 🛒</h1>
+            <p className="text-muted-foreground text-lg">{items.length} منتج في السلة</p>
           </div>
           <Button
             variant="ghost"
@@ -73,7 +60,6 @@ export default function CartPage() {
           </Button>
         </div>
 
-        {/* Cart Items */}
         <div className="space-y-4 mb-8">
           {items.map((item, index) => (
             <motion.div
@@ -83,49 +69,22 @@ export default function CartPage() {
               transition={{ delay: index * 0.1 }}
               className="bg-card rounded-2xl p-4 flex items-center gap-4"
             >
-              {/* Product Image */}
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-secondary/50 flex items-center justify-center">
                 <CartItemImage item={item} />
               </div>
-
-              {/* Product Info */}
               <div className="flex-grow min-w-0">
-                <h3 className="font-bold text-foreground text-base md:text-lg truncate">
-                  {item.product.name_ar}
-                </h3>
-                <p className="text-accent font-bold text-lg mt-1">
-                  {item.product.price * item.quantity} ج
-                </p>
+                <h3 className="font-bold text-foreground text-base md:text-lg truncate">{item.product.nameAr}</h3>
+                <p className="text-accent font-bold text-lg mt-1">{item.product.price * item.quantity} ج</p>
               </div>
-
-              {/* Quantity Controls */}
               <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10"
-                  onClick={() =>
-                    updateQuantity(item.product.id, item.quantity - 1)
-                  }
-                >
+                <Button variant="outline" size="icon" className="h-10 w-10" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="w-10 text-center text-lg font-bold text-foreground">
-                  {item.quantity}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10"
-                  onClick={() =>
-                    updateQuantity(item.product.id, item.quantity + 1)
-                  }
-                >
+                <span className="w-10 text-center text-lg font-bold text-foreground">{item.quantity}</span>
+                <Button variant="outline" size="icon" className="h-10 w-10" onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-
-              {/* Remove */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -138,7 +97,6 @@ export default function CartPage() {
           ))}
         </div>
 
-        {/* Summary + Next */}
         <div className="bg-card rounded-2xl p-6 mb-4">
           <div className="flex justify-between text-lg mb-2">
             <span className="text-muted-foreground">إجمالي المنتجات</span>
@@ -155,9 +113,7 @@ export default function CartPage() {
         </Link>
 
         <Link to="/" className="block mt-4">
-          <Button variant="outline" size="lg" className="w-full">
-            متابعة التسوق
-          </Button>
+          <Button variant="outline" size="lg" className="w-full">متابعة التسوق</Button>
         </Link>
       </div>
     </div>

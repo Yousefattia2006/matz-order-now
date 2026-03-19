@@ -6,23 +6,18 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const { signIn } = useAdmin();
+  const { login } = useAdmin();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
-    const { error } = await signIn(email, password);
-    if (error) {
-      toast.error("فشل تسجيل الدخول: " + error.message);
-    } else {
-      toast.success("تم تسجيل الدخول بنجاح");
+    if (login(password)) {
+      toast.success("Welcome back!");
       navigate("/admin");
+    } else {
+      toast.error("Wrong password");
     }
-    setSubmitting(false);
   };
 
   return (
@@ -33,21 +28,14 @@ export default function AdminLogin() {
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? "Signing in..." : "Sign In"}
+          <Button type="submit" className="w-full">
+            Sign In
           </Button>
         </form>
       </div>
