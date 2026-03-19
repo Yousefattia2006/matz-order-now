@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
-import type { Tables } from "@/integrations/supabase/types";
-
-type Product = Tables<"products">;
+import type { Product } from "@/data/products";
 
 export interface CartItem {
   product: Product;
@@ -49,14 +47,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
-        toast.success(`تم زيادة الكمية: ${product.name_ar} ✅`);
+        toast.success(`تم زيادة الكمية: ${product.nameAr} ✅`);
         return prev.map((item) =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      toast.success(`تم إضافة ${product.name_ar} للسلة ✅`);
+      toast.success(`تم إضافة ${product.nameAr} للسلة ✅`);
       return [...prev, { product, quantity: 1 }];
     });
   };
@@ -65,7 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const item = prev.find((i) => i.product.id === productId);
       if (item) {
-        toast.info(`تم إزالة ${item.product.name_ar} من السلة`);
+        toast.info(`تم إزالة ${item.product.nameAr} من السلة`);
       }
       return prev.filter((item) => item.product.id !== productId);
     });
