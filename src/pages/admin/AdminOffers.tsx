@@ -169,8 +169,8 @@ function OfferFormDialog({
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium">Image URL</label>
-            <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." dir="ltr" />
+            <label className="text-sm font-medium">Image</label>
+            <ImageUpload value={imageUrl} onChange={setImageUrl} />
           </div>
           <Button type="submit" className="w-full">
             {isEdit ? "Update" : "Create"}

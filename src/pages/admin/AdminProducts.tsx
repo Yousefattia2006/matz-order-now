@@ -182,8 +182,8 @@ function ProductFormDialog({
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium">Image URL</label>
-            <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." dir="ltr" />
+            <label className="text-sm font-medium">Image</label>
+            <ImageUpload value={imageUrl} onChange={setImageUrl} />
           </div>
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 text-sm">
