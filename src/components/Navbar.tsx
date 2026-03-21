@@ -43,8 +43,8 @@ export function Navbar() {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl md:text-2xl font-bold text-primary">
+          <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); handleLogoTap(); }} onDoubleClick={(e) => e.preventDefault()}>
+            <span className="text-xl md:text-2xl font-bold text-primary select-none">
               TazaMart
             </span>
           </Link>
