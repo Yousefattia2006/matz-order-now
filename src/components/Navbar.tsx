@@ -8,6 +8,22 @@ import { motion, AnimatePresence } from "framer-motion";
 export function Navbar() {
   const { itemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const tapCountRef = useRef(0);
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLogoTap = useCallback(() => {
+    tapCountRef.current += 1;
+    if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+    if (tapCountRef.current >= 4) {
+      tapCountRef.current = 0;
+      navigate("/admin/login");
+      return;
+    }
+    tapTimerRef.current = setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 1200);
+  }, [navigate]);
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b-2 border-primary/20">
