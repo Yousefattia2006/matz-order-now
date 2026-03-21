@@ -5,36 +5,26 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { useOffers, Offer } from "@/hooks/useOffers";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
-interface Offer {
-  id: string;
-  titleAr: string;
-  descriptionAr: string;
-  discountPercent: number | null;
-  imageUrl: string;
-  isActive: boolean;
-  startDate: string;
-  endDate: string;
-}
-
 export default function AdminOffers() {
-  const [offers, setOffers] = useState<Offer[]>([]);
+  const { offers, addOffer, updateOffer, deleteOffer } = useOffers();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Offer | null>(null);
 
   const handleDelete = (id: string) => {
-    setOffers((prev) => prev.filter((o) => o.id !== id));
+    deleteOffer(id);
     toast.success("Offer deleted");
   };
 
   const handleSave = (offer: Offer, isEdit: boolean) => {
     if (isEdit) {
-      setOffers((prev) => prev.map((o) => (o.id === offer.id ? offer : o)));
+      updateOffer(offer);
       toast.success("Offer updated");
     } else {
-      setOffers((prev) => [offer, ...prev]);
+      addOffer(offer);
       toast.success("Offer created");
     }
     setDialogOpen(false);
@@ -44,7 +34,7 @@ export default function AdminOffers() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Special Offers</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Special Offers</h1>
         <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
           <Plus className="h-4 w-4" /> Add Offer
         </Button>
