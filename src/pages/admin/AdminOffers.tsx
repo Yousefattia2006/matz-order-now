@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
@@ -168,8 +169,8 @@ function OfferFormDialog({
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium">Image URL</label>
-            <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." dir="ltr" />
+            <label className="text-sm font-medium">Image</label>
+            <ImageUpload value={imageUrl} onChange={setImageUrl} />
           </div>
           <Button type="submit" className="w-full">
             {isEdit ? "Update" : "Create"}

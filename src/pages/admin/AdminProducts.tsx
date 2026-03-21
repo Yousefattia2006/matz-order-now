@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
@@ -40,40 +41,40 @@ export default function AdminProducts() {
         </Button>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
-        <table className="w-full text-left text-sm">
+      <div className="bg-card rounded-2xl border border-border overflow-x-auto">
+        <table className="w-full text-left text-sm min-w-[600px]">
           <thead className="bg-secondary">
             <tr>
-              <th className="px-4 py-3 font-medium">Image</th>
-              <th className="px-4 py-3 font-medium">Name (AR)</th>
-              <th className="px-4 py-3 font-medium">Price</th>
-              <th className="px-4 py-3 font-medium">Unit</th>
-              <th className="px-4 py-3 font-medium">Category</th>
-              <th className="px-4 py-3 font-medium">Active</th>
-              <th className="px-4 py-3 font-medium">Featured</th>
-              <th className="px-4 py-3 font-medium">Actions</th>
+              <th className="px-3 py-3 font-medium">Image</th>
+              <th className="px-3 py-3 font-medium">Name (AR)</th>
+              <th className="px-3 py-3 font-medium">Price</th>
+              <th className="px-3 py-3 font-medium hidden sm:table-cell">Unit</th>
+              <th className="px-3 py-3 font-medium hidden sm:table-cell">Category</th>
+              <th className="px-3 py-3 font-medium">Active</th>
+              <th className="px-3 py-3 font-medium hidden sm:table-cell">Featured</th>
+              <th className="px-3 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {productList.map((p) => (
               <tr key={p.id} className="border-t border-border hover:bg-secondary/50">
-                <td className="px-4 py-3">
+                <td className="px-3 py-3">
                   {p.imageUrl ? (
                     <img src={p.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
                   ) : (
                     <span className="text-2xl">{p.emoji}</span>
                   )}
                 </td>
-                <td className="px-4 py-3 font-medium">{p.nameAr}</td>
-                <td className="px-4 py-3">{p.price} ج</td>
-                <td className="px-4 py-3">{p.unit}</td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-3 font-medium">{p.nameAr}</td>
+                <td className="px-3 py-3">{p.price} ج</td>
+                <td className="px-3 py-3 hidden sm:table-cell">{p.unit}</td>
+                <td className="px-3 py-3 hidden sm:table-cell">
                   {categories.find((c) => c.id === p.categoryId)?.nameAr ?? p.categoryId}
                 </td>
-                <td className="px-4 py-3">{p.isActive ? "✅" : "❌"}</td>
-                <td className="px-4 py-3">{p.isFeatured ? "⭐" : "—"}</td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
+                <td className="px-3 py-3">{p.isActive ? "✅" : "❌"}</td>
+                <td className="px-3 py-3 hidden sm:table-cell">{p.isFeatured ? "⭐" : "—"}</td>
+                <td className="px-3 py-3">
+                  <div className="flex gap-1">
                     <Button variant="ghost" size="icon" onClick={() => { setEditing(p); setDialogOpen(true); }}>
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -181,8 +182,8 @@ function ProductFormDialog({
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium">Image URL</label>
-            <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." dir="ltr" />
+            <label className="text-sm font-medium">Image</label>
+            <ImageUpload value={imageUrl} onChange={setImageUrl} />
           </div>
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 text-sm">

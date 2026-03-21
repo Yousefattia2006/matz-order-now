@@ -1,13 +1,33 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function Navbar() {
   const { itemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const tapCountRef = useRef(0);
+  const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLogoTap = useCallback(() => {
+    tapCountRef.current += 1;
+    if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+    if (tapCountRef.current >= 4) {
+      tapCountRef.current = 0;
+      navigate("/admin/login");
+      return;
+    }
+    tapTimerRef.current = setTimeout(() => {
+      // If only 1 tap, navigate home
+      if (tapCountRef.current <= 1) {
+        navigate("/");
+      }
+      tapCountRef.current = 0;
+    }, 600);
+  }, [navigate]);
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b-2 border-primary/20">
@@ -27,8 +47,8 @@ export function Navbar() {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl md:text-2xl font-bold text-primary">
+          <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); handleLogoTap(); }} onDoubleClick={(e) => e.preventDefault()}>
+            <span className="text-xl md:text-2xl font-bold text-primary select-none">
               TazaMart
             </span>
           </Link>
