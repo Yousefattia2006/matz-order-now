@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { products as initialProducts, Product } from "@/data/products";
+import { useProducts } from "@/hooks/useProducts";
+import { Product } from "@/data/products";
 import { categories } from "@/data/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,21 +12,21 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
 export default function AdminProducts() {
-  const [productList, setProductList] = useState<Product[]>(initialProducts);
+  const { products: productList, addProduct, updateProduct, deleteProduct } = useProducts();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
 
   const handleDelete = (id: string) => {
-    setProductList((prev) => prev.filter((p) => p.id !== id));
+    deleteProduct(id);
     toast.success("Product deleted");
   };
 
   const handleSave = (product: Product, isEdit: boolean) => {
     if (isEdit) {
-      setProductList((prev) => prev.map((p) => (p.id === product.id ? product : p)));
+      updateProduct(product);
       toast.success("Product updated");
     } else {
-      setProductList((prev) => [product, ...prev]);
+      addProduct(product);
       toast.success("Product created");
     }
     setDialogOpen(false);
@@ -35,7 +36,7 @@ export default function AdminProducts() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Products</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Products</h1>
         <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
           <Plus className="h-4 w-4" /> Add Product
         </Button>

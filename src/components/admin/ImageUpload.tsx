@@ -62,6 +62,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
         >
           <ImagePlus className="h-6 w-6 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Upload Image</span>
+          <span className="text-xs text-muted-foreground/70">Recommended: 400×400px</span>
         </Button>
       )}
     </div>

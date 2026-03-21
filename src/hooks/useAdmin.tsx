@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, ReactNode } from "react";
+import { useState, createContext, useContext, ReactNode, useCallback } from "react";
 
 interface AdminContextType {
   isLoggedIn: boolean;
@@ -23,10 +23,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setIsLoggedIn(false);
     sessionStorage.removeItem(ADMIN_KEY);
-  };
+    window.location.href = "/";
+  }, []);
 
   return (
     <AdminContext.Provider value={{ isLoggedIn, login, logout }}>
