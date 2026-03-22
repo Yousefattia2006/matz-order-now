@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
+import tazaLogo from "@/assets/taza-logo.png";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useCallback } from "react";
