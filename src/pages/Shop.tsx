@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { categories } from "@/data/categories";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useProducts } from "@/hooks/useProducts";
 import { useOffers } from "@/hooks/useOffers";
 import { ProductCard } from "@/components/ProductCard";
@@ -12,6 +13,15 @@ export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
   const { products } = useProducts();
   const { activeOffers } = useOffers();
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("*").order("sort_order");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const filteredProducts = products.filter((p) => {
     if (!p.isActive) return false;
@@ -42,19 +52,17 @@ export default function Shop() {
                   className="min-w-[260px] max-w-[300px] bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl border border-primary/20 overflow-hidden shrink-0"
                 >
                   {offer.imageUrl && (
-                    <img src={offer.imageUrl} alt="" className="w-full h-28 object-cover" />
+                    <div className="w-full aspect-square overflow-hidden">
+                      <img src={offer.imageUrl} alt="" className="w-full h-full object-cover" />
+                    </div>
                   )}
                   <div className="p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-bold text-foreground">{offer.titleAr}</h3>
-                      {offer.discountPercent && (
-                        <span className="shrink-0 px-2 py-0.5 bg-destructive text-destructive-foreground rounded-full text-xs font-bold">
-                          {offer.discountPercent}%
-                        </span>
-                      )}
-                    </div>
+                    <h3 className="font-bold text-foreground">{offer.titleAr}</h3>
                     {offer.descriptionAr && (
                       <p className="text-muted-foreground text-sm mt-1 line-clamp-2">{offer.descriptionAr}</p>
+                    )}
+                    {offer.price > 0 && (
+                      <p className="font-bold text-accent text-lg mt-1">{offer.price} ج</p>
                     )}
                   </div>
                 </div>
@@ -91,7 +99,7 @@ export default function Shop() {
                 }`}
               >
                 <span>{category.emoji}</span>
-                <span>{category.nameAr}</span>
+                <span>{category.name_ar}</span>
               </button>
             ))}
           </div>

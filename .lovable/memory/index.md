@@ -10,13 +10,20 @@ Design system, constraints, and architecture for TazaMart
 
 ## Architecture
 - Backend: Supabase (products, categories, special_offers, user_roles tables)
-- Product type: Tables<"products"> from supabase types (name_ar, image_url, NOT nameAr/imageUrl)
-- Cart: Context + localStorage, uses Supabase product type
-- Admin: /admin/* routes (LTR, no navbar/footer), protected by has_role() check
+- Product type: camelCase frontend interface mapped from snake_case DB columns via useProducts hook
+- Cart: Context + localStorage, uses frontend Product type (camelCase)
+- Admin: /admin/* routes (LTR, no navbar/footer), protected by Supabase auth via admin-login edge function
+- Admin auth: Edge function validates password "taza2024", creates/signs-in Supabase user, returns session
 - Storage: product-images bucket (public) for admin uploads
-- Special offers popup on first visit (sessionStorage flag)
+- Special offers: product-style items with name, description, price, image (no discount field)
+- Special offer popup on first visit (sessionStorage flag)
+- All data (products, categories, offers) persisted in Supabase, fetched via react-query
+- No toast notifications in admin dashboard
 
 ## Removed
 - Leaf logo next to brand name
 - CartBar checkout button (إتمام الطلب)
-- Static data files (src/data/products.ts, src/data/categories.ts) - now from Supabase
+- Static data as primary source (now Supabase is source of truth)
+- localStorage-based product/offer storage
+- Discount-based offer creation
+- Toast notifications from admin pages

@@ -3,20 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { login } = useAdmin();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(password)) {
-      toast.success("Welcome back!");
+    setLoading(true);
+    setError("");
+    const success = await login(password);
+    setLoading(false);
+    if (success) {
       navigate("/admin");
     } else {
-      toast.error("Wrong password");
+      setError("Wrong password");
     }
   };
 
@@ -34,8 +38,9 @@ export default function AdminLogin() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <Button type="submit" className="w-full">
-            Sign In
+          {error && <p className="text-destructive text-sm text-center">{error}</p>}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
       </div>

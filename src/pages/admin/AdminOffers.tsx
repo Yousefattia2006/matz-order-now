@@ -5,56 +5,30 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ImageUpload } from "@/components/admin/ImageUpload";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useOffers, Offer } from "@/hooks/useOffers";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
-interface OfferRow {
-  id: string;
-  title_ar: string;
-  description_ar: string | null;
-  price: number;
-  image_url: string | null;
-  is_active: boolean;
-  start_date: string;
-  end_date: string | null;
-}
-
 export default function AdminOffers() {
-  const queryClient = useQueryClient();
+  const { offers, addOffer, updateOffer, deleteOffer } = useOffers();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<OfferRow | null>(null);
+  const [editing, setEditing] = useState<Offer | null>(null);
 
-  const { data: offers = [] } = useQuery({
-    queryKey: ["admin-offers"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("special_offers")
-        .select("id, title_ar, description_ar, price, image_url, is_active, start_date, end_date")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as OfferRow[];
-    },
-  });
+  const handleDelete = async (id: string) => {
+    try { await deleteOffer(id); } catch (e) { console.error("Delete failed:", e); }
+  };
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("special_offers").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-offers"] });
-      queryClient.invalidateQueries({ queryKey: ["active-offers"] });
-      toast.success("Offer deleted");
-    },
-  });
-
-  const handleSave = () => {
-    queryClient.invalidateQueries({ queryKey: ["admin-offers"] });
-    queryClient.invalidateQueries({ queryKey: ["active-offers"] });
-    setDialogOpen(false);
-    setEditing(null);
+  const handleSave = async (offer: Offer, isEdit: boolean) => {
+    try {
+      if (isEdit) {
+        await updateOffer(offer);
+      } else {
+        await addOffer(offer);
+      }
+      setDialogOpen(false);
+      setEditing(null);
+    } catch (e) {
+      console.error("Save failed:", e);
+    }
   };
 
   return (
@@ -74,7 +48,7 @@ export default function AdminOffers() {
             <div key={offer.id} className="bg-card rounded-2xl border border-border p-5">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="font-bold text-lg text-foreground">{offer.title_ar}</h3>
+                  <h3 className="font-bold text-lg text-foreground">{offer.titleAr}</h3>
                   <span className="inline-block mt-1 px-3 py-1 bg-accent/10 text-accent rounded-full text-sm font-bold">
                     {offer.price} ج
                   </span>
@@ -83,21 +57,21 @@ export default function AdminOffers() {
                   <Button variant="ghost" size="icon" onClick={() => { setEditing(offer); setDialogOpen(true); }}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(offer.id)}>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(offer.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
               </div>
-              {offer.description_ar && <p className="text-muted-foreground text-sm mb-2">{offer.description_ar}</p>}
-              {offer.image_url && (
+              {offer.descriptionAr && <p className="text-muted-foreground text-sm mb-2">{offer.descriptionAr}</p>}
+              {offer.imageUrl && (
                 <div className="w-full aspect-square overflow-hidden rounded-xl mb-2">
-                  <img src={offer.image_url} alt="" className="w-full h-full object-cover" />
+                  <img src={offer.imageUrl} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span>{offer.is_active ? "🟢 Active" : "🔴 Inactive"}</span>
-                <span>From: {offer.start_date?.slice(0, 10)}</span>
-                {offer.end_date && <span>To: {offer.end_date.slice(0, 10)}</span>}
+                <span>{offer.isActive ? "🟢 Active" : "🔴 Inactive"}</span>
+                <span>From: {offer.startDate}</span>
+                {offer.endDate && <span>To: {offer.endDate}</span>}
               </div>
             </div>
           ))}
@@ -112,7 +86,7 @@ export default function AdminOffers() {
 function OfferFormDialog({
   open, onOpenChange, offer, onSave,
 }: {
-  open: boolean; onOpenChange: (v: boolean) => void; offer: OfferRow | null; onSave: () => void;
+  open: boolean; onOpenChange: (v: boolean) => void; offer: Offer | null; onSave: (o: Offer, isEdit: boolean) => void;
 }) {
   const isEdit = !!offer;
 
@@ -126,39 +100,30 @@ function OfferFormDialog({
 
   useEffect(() => {
     if (open) {
-      setTitleAr(offer?.title_ar ?? "");
-      setDescriptionAr(offer?.description_ar ?? "");
+      setTitleAr(offer?.titleAr ?? "");
+      setDescriptionAr(offer?.descriptionAr ?? "");
       setPrice(offer?.price?.toString() ?? "0");
-      setImageUrl(offer?.image_url ?? "");
-      setIsActive(offer?.is_active ?? true);
-      setStartDate(offer?.start_date?.slice(0, 10) ?? new Date().toISOString().slice(0, 10));
-      setEndDate(offer?.end_date?.slice(0, 10) ?? "");
+      setImageUrl(offer?.imageUrl ?? "");
+      setIsActive(offer?.isActive ?? true);
+      setStartDate(offer?.startDate ?? new Date().toISOString().slice(0, 10));
+      setEndDate(offer?.endDate ?? "");
     }
   }, [open, offer]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = {
-      title_ar: titleAr,
-      description_ar: descriptionAr || null,
+    const o: Offer = {
+      id: isEdit && offer ? offer.id : "",
+      titleAr,
+      descriptionAr,
       price: parseFloat(price),
-      image_url: imageUrl || null,
-      is_active: isActive,
-      start_date: startDate,
-      end_date: endDate || null,
-      discount_percent: null,
+      imageUrl,
+      isActive,
+      startDate,
+      endDate,
+      discountPercent: null,
     };
-
-    if (isEdit && offer) {
-      const { error } = await supabase.from("special_offers").update(payload).eq("id", offer.id);
-      if (error) { toast.error("Failed to update"); return; }
-      toast.success("Offer updated");
-    } else {
-      const { error } = await supabase.from("special_offers").insert(payload);
-      if (error) { toast.error("Failed to create"); return; }
-      toast.success("Offer created");
-    }
-    onSave();
+    onSave(o, isEdit);
   };
 
   return (
