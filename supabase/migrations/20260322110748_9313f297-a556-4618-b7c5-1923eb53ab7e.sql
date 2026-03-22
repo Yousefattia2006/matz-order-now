@@ -1,0 +1,1 @@
+ALTER TABLE public.special_offers ADD COLUMN IF NOT EXISTS price numeric DEFAULT 0;

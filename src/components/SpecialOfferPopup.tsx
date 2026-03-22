@@ -60,19 +60,17 @@ export function SpecialOfferPopup() {
             {offers.map((offer) => (
               <div key={offer.id} className="bg-card rounded-xl border border-border overflow-hidden">
                 {offer.image_url && (
-                  <img src={offer.image_url} alt="" className="w-full h-32 object-cover" />
+                  <div className="w-full aspect-square overflow-hidden">
+                    <img src={offer.image_url} alt="" className="w-full h-full object-cover" />
+                  </div>
                 )}
                 <div className="p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-bold text-foreground text-lg">{offer.title_ar}</h3>
-                    {offer.discount_percent && (
-                      <span className="shrink-0 px-3 py-1 bg-destructive text-destructive-foreground rounded-full text-sm font-bold">
-                        {offer.discount_percent}%
-                      </span>
-                    )}
-                  </div>
+                  <h3 className="font-bold text-foreground text-lg">{offer.title_ar}</h3>
                   {offer.description_ar && (
                     <p className="text-muted-foreground text-sm mt-1">{offer.description_ar}</p>
+                  )}
+                  {(offer as any).price > 0 && (
+                    <p className="font-bold text-accent text-xl mt-2">{(offer as any).price} ج</p>
                   )}
                 </div>
               </div>
