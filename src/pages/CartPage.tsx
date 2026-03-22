@@ -60,42 +60,45 @@ export default function CartPage() {
           </Button>
         </div>
 
-        <div className="space-y-4 mb-8">
-          {items.map((item, index) => (
-            <motion.div
-              key={item.product.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-card rounded-2xl p-4 flex items-center gap-4"
-            >
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-secondary/50 flex items-center justify-center aspect-square">
-                <CartItemImage item={item} />
-              </div>
-              <div className="flex-grow min-w-0">
-                <h3 className="font-bold text-foreground text-base md:text-lg truncate">{item.product.nameAr}</h3>
-                <p className="text-muted-foreground text-xs">{item.product.unit}</p>
-                <p className="text-accent font-bold text-lg mt-1">{item.product.price * item.quantity} ج</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" className="h-10 w-10" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-10 text-center text-lg font-bold text-foreground">{item.quantity}</span>
-                <Button variant="outline" size="icon" className="h-10 w-10" onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10 flex-shrink-0 h-10 w-10"
-                onClick={() => removeItem(item.product.id)}
+        <div className="bg-card rounded-2xl p-5 mb-8">
+          <h3 className="font-bold text-foreground mb-4">المنتجات</h3>
+          <div className="space-y-3">
+            {items.map((item, index) => (
+              <motion.div
+                key={item.product.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="flex items-center gap-3"
               >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </motion.div>
-          ))}
+                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-secondary/50 flex items-center justify-center">
+                  <CartItemImage item={item} />
+                </div>
+                <div className="flex-grow min-w-0">
+                  <p className="font-bold text-foreground truncate text-sm">{item.product.nameAr}</p>
+                  <p className="text-sm text-muted-foreground">{item.quantity} × {item.product.price} ج</p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <span className="w-8 text-center text-sm font-bold text-foreground">{item.quantity}</span>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+                <p className="font-bold text-foreground text-sm shrink-0">{item.product.price * item.quantity} ج</p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0 h-8 w-8"
+                  onClick={() => removeItem(item.product.id)}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         <div className="bg-card rounded-2xl p-6 mb-4">
