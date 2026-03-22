@@ -62,42 +62,45 @@ export default function CartPage() {
 
         <div className="bg-card rounded-2xl p-5 mb-8">
           <h3 className="font-bold text-foreground mb-4">المنتجات</h3>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {items.map((item, index) => (
               <motion.div
                 key={item.product.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-3"
               >
-                <div className="shrink-0 flex flex-col items-center gap-1">
-                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-secondary/50 flex items-center justify-center">
+                {/* Same layout as checkout summary: image | name + qty×price | total */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-secondary/50 flex items-center justify-center">
                     <CartItemImage item={item} />
                   </div>
-                  <p className="font-bold text-foreground text-[11px] text-center leading-tight max-w-[56px] truncate">{item.product.nameAr}</p>
+                  <div className="flex-grow min-w-0">
+                    <p className="font-bold text-foreground truncate text-sm">{item.product.nameAr}</p>
+                    <p className="text-sm text-muted-foreground">{item.quantity} × {item.product.price} ج</p>
+                  </div>
+                  <p className="font-bold text-foreground text-sm shrink-0">{item.product.price * item.quantity} ج</p>
                 </div>
-                <div className="flex-grow min-w-0">
-                  <p className="text-sm text-muted-foreground">{item.quantity} × {item.product.price} ج</p>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>
-                    <Minus className="h-3 w-3" />
+                {/* Quantity controls below */}
+                <div className="flex items-center justify-end gap-2 mt-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 w-7"
+                    onClick={() => removeItem(item.product.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
-                  <span className="w-8 text-center text-sm font-bold text-foreground">{item.quantity}</span>
-                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>
-                    <Plus className="h-3 w-3" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                    <span className="w-7 text-center text-sm font-bold text-foreground">{item.quantity}</span>
+                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="font-bold text-foreground text-sm shrink-0">{item.product.price * item.quantity} ج</p>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0 h-8 w-8"
-                  onClick={() => removeItem(item.product.id)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
               </motion.div>
             ))}
           </div>
