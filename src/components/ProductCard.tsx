@@ -24,12 +24,12 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
       whileHover={{ y: -4 }}
       className="bg-card rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow"
     >
-      <div className="relative w-full aspect-square bg-secondary/50 flex items-center justify-center overflow-hidden">
+      <div className="relative w-full aspect-[4/3] bg-secondary/50 flex items-center justify-center overflow-hidden">
         {product.imageUrl && !imgError ? (
           <img
             src={product.imageUrl}
             alt={product.nameAr}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain p-2"
             loading="lazy"
             onError={() => setImgError(true)}
           />
