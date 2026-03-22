@@ -48,7 +48,7 @@ export function Navbar() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); handleLogoTap(); }} onDoubleClick={(e) => e.preventDefault()}>
-            <img src={tazaLogo} alt="TazaMart" className="h-9 md:h-11 w-auto select-none" draggable={false} />
+            <img src={tazaLogo} alt="TazaMart" className="h-12 md:h-14 w-auto select-none" draggable={false} />
           </Link>
 
           {/* Desktop Navigation */}
