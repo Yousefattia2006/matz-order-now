@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Phone, MessageCircle, MapPin } from "lucide-react";
 
 export function Footer() {
-  const whatsappNumber = "201093363030";
+  const whatsappNumber = "201555541885";
 
   return (
     <footer className="bg-primary text-primary-foreground py-12 mt-16">
