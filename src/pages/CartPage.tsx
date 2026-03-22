@@ -11,7 +11,7 @@ function CartItemImage({ item }: { item: { product: { imageUrl?: string; emoji: 
     <img
       src={item.product.imageUrl}
       alt={item.product.nameAr}
-      className="w-full h-full object-cover"
+      className="w-full h-full object-cover aspect-square"
       onError={() => setImgError(true)}
     />
   ) : (

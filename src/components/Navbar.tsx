@@ -92,13 +92,6 @@ export function Navbar() {
           >
             <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
               <Link
-                to="/"
-                className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                الرئيسية
-              </Link>
-              <Link
                 to="/shop"
                 className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
                 onClick={() => setMobileMenuOpen(false)}

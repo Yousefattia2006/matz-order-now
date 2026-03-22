@@ -75,7 +75,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setItems([]);
-    toast.info("تم تفريغ السلة");
   };
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
