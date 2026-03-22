@@ -1,36 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { Product } from "@/data/products";
-import { categories } from "@/data/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/admin/ImageUpload";
-import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminProducts() {
   const { products: productList, addProduct, updateProduct, deleteProduct } = useProducts();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
 
-  const handleDelete = (id: string) => {
-    deleteProduct(id);
-    toast.success("Product deleted");
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("*").order("sort_order");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const handleDelete = async (id: string) => {
+    try { await deleteProduct(id); } catch (e) { console.error("Delete failed:", e); }
   };
 
-  const handleSave = (product: Product, isEdit: boolean) => {
-    if (isEdit) {
-      updateProduct(product);
-      toast.success("Product updated");
-    } else {
-      addProduct(product);
-      toast.success("Product created");
+  const handleSave = async (product: Product, isEdit: boolean) => {
+    try {
+      if (isEdit) {
+        await updateProduct(product);
+      } else {
+        await addProduct(product);
+      }
+      setDialogOpen(false);
+      setEditing(null);
+    } catch (e) {
+      console.error("Save failed:", e);
     }
-    setDialogOpen(false);
-    setEditing(null);
   };
 
   return (
@@ -70,7 +80,7 @@ export default function AdminProducts() {
                 <td className="px-3 py-3">{p.price} ج</td>
                 <td className="px-3 py-3 hidden sm:table-cell">{p.unit}</td>
                 <td className="px-3 py-3 hidden sm:table-cell">
-                  {categories.find((c) => c.id === p.categoryId)?.nameAr ?? p.categoryId}
+                  {categories.find((c) => c.id === p.categoryId)?.name_ar ?? p.categoryId}
                 </td>
                 <td className="px-3 py-3">{p.isActive ? "✅" : "❌"}</td>
                 <td className="px-3 py-3 hidden sm:table-cell">{p.isFeatured ? "⭐" : "—"}</td>
@@ -94,6 +104,7 @@ export default function AdminProducts() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         product={editing}
+        categories={categories}
         onSave={handleSave}
       />
     </div>
@@ -101,31 +112,33 @@ export default function AdminProducts() {
 }
 
 function ProductFormDialog({
-  open, onOpenChange, product, onSave,
+  open, onOpenChange, product, categories, onSave,
 }: {
-  open: boolean; onOpenChange: (v: boolean) => void; product: Product | null; onSave: (p: Product, isEdit: boolean) => void;
+  open: boolean; onOpenChange: (v: boolean) => void; product: Product | null; categories: any[]; onSave: (p: Product, isEdit: boolean) => void;
 }) {
   const isEdit = !!product;
 
-  const [nameAr, setNameAr] = useState(product?.nameAr ?? "");
-  const [emoji, setEmoji] = useState(product?.emoji ?? "📦");
-  const [price, setPrice] = useState(product?.price?.toString() ?? "0");
-  const [unit, setUnit] = useState(product?.unit ?? "كيلو");
-  const [categoryId, setCategoryId] = useState(product?.categoryId ?? categories[0]?.id ?? "");
-  const [isActive, setIsActive] = useState(product?.isActive ?? true);
-  const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false);
-  const [imageUrl, setImageUrl] = useState(product?.imageUrl ?? "");
+  const [nameAr, setNameAr] = useState("");
+  const [emoji, setEmoji] = useState("📦");
+  const [price, setPrice] = useState("0");
+  const [unit, setUnit] = useState("كيلو");
+  const [categoryId, setCategoryId] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
-  const resetForm = () => {
-    setNameAr(product?.nameAr ?? "");
-    setEmoji(product?.emoji ?? "📦");
-    setPrice(product?.price?.toString() ?? "0");
-    setUnit(product?.unit ?? "كيلو");
-    setCategoryId(product?.categoryId ?? categories[0]?.id ?? "");
-    setIsActive(product?.isActive ?? true);
-    setIsFeatured(product?.isFeatured ?? false);
-    setImageUrl(product?.imageUrl ?? "");
-  };
+  useEffect(() => {
+    if (open) {
+      setNameAr(product?.nameAr ?? "");
+      setEmoji(product?.emoji ?? "📦");
+      setPrice(product?.price?.toString() ?? "0");
+      setUnit(product?.unit ?? "كيلو");
+      setCategoryId(product?.categoryId ?? categories[0]?.id ?? "");
+      setIsActive(product?.isActive ?? true);
+      setIsFeatured(product?.isFeatured ?? false);
+      setImageUrl(product?.imageUrl ?? "");
+    }
+  }, [open, product, categories]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,11 +154,10 @@ function ProductFormDialog({
       imageUrl: imageUrl || undefined,
     };
     onSave(p, isEdit);
-    resetForm();
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (v) resetForm(); }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" dir="ltr">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Product" : "Add Product"}</DialogTitle>
@@ -176,7 +188,7 @@ function ProductFormDialog({
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.nameAr}</SelectItem>
+                    <SelectItem key={c.id} value={c.id}>{c.name_ar}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

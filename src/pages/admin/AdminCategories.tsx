@@ -1,31 +1,58 @@
-import { useState } from "react";
-import { categories as initialCategories, Category } from "@/data/categories";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
+interface Category {
+  id: string;
+  name_ar: string;
+  name_en: string | null;
+  emoji: string;
+  slug: string;
+  color: string;
+  sort_order: number;
+}
+
 export default function AdminCategories() {
-  const [categoryList, setCategoryList] = useState<Category[]>(initialCategories);
+  const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
 
-  const handleDelete = (id: string) => {
-    setCategoryList((prev) => prev.filter((c) => c.id !== id));
-    toast.success("Category deleted");
+  const { data: categoryList = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("*").order("sort_order");
+      if (error) throw error;
+      return data as Category[];
+    },
+  });
+
+  const handleDelete = async (id: string) => {
+    try {
+      await supabase.from("categories").delete().eq("id", id);
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    } catch (e) { console.error("Delete failed:", e); }
   };
 
-  const handleSave = (cat: Category, isEdit: boolean) => {
-    if (isEdit) {
-      setCategoryList((prev) => prev.map((c) => (c.id === cat.id ? cat : c)));
-      toast.success("Category updated");
-    } else {
-      setCategoryList((prev) => [...prev, cat]);
-      toast.success("Category created");
-    }
-    setDialogOpen(false);
-    setEditing(null);
+  const handleSave = async (cat: Category, isEdit: boolean) => {
+    try {
+      if (isEdit) {
+        await supabase.from("categories").update({
+          name_ar: cat.name_ar,
+          name_en: cat.name_en,
+          emoji: cat.emoji,
+          color: cat.color,
+        }).eq("id", cat.id);
+      } else {
+        await supabase.from("categories").insert(cat);
+      }
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setDialogOpen(false);
+      setEditing(null);
+    } catch (e) { console.error("Save failed:", e); }
   };
 
   return (
@@ -43,8 +70,8 @@ export default function AdminCategories() {
             <div className="flex items-center gap-3">
               <span className="text-3xl">{cat.emoji}</span>
               <div>
-                <p className="font-bold text-foreground">{cat.nameAr}</p>
-                <p className="text-sm text-muted-foreground">{cat.nameEn} · {cat.slug}</p>
+                <p className="font-bold text-foreground">{cat.name_ar}</p>
+                <p className="text-sm text-muted-foreground">{cat.name_en} · {cat.slug}</p>
               </div>
             </div>
             <div className="flex gap-1">
@@ -71,30 +98,39 @@ function CategoryFormDialog({
 }) {
   const isEdit = !!category;
 
-  const [nameAr, setNameAr] = useState(category?.nameAr ?? "");
-  const [nameEn, setNameEn] = useState(category?.nameEn ?? "");
-  const [emoji, setEmoji] = useState(category?.emoji ?? "📦");
-  const [slug, setSlug] = useState(category?.slug ?? "");
-  const [color, setColor] = useState(category?.color ?? "bg-gray-100");
+  const [nameAr, setNameAr] = useState("");
+  const [nameEn, setNameEn] = useState("");
+  const [emoji, setEmoji] = useState("📦");
+  const [slug, setSlug] = useState("");
+  const [color, setColor] = useState("bg-gray-100");
 
-  const resetForm = () => {
-    setNameAr(category?.nameAr ?? "");
-    setNameEn(category?.nameEn ?? "");
-    setEmoji(category?.emoji ?? "📦");
-    setSlug(category?.slug ?? "");
-    setColor(category?.color ?? "bg-gray-100");
-  };
+  useEffect(() => {
+    if (open) {
+      setNameAr(category?.name_ar ?? "");
+      setNameEn(category?.name_en ?? "");
+      setEmoji(category?.emoji ?? "📦");
+      setSlug(category?.slug ?? "");
+      setColor(category?.color ?? "bg-gray-100");
+    }
+  }, [open, category]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const id = isEdit && category ? category.id : slug.toLowerCase().replace(/\s+/g, "-");
-    const cat: Category = { id, nameAr, nameEn, emoji, slug: id, color };
+    const cat: Category = {
+      id,
+      name_ar: nameAr,
+      name_en: nameEn || null,
+      emoji,
+      slug: id,
+      color,
+      sort_order: category?.sort_order ?? 0,
+    };
     onSave(cat, isEdit);
-    resetForm();
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (v) resetForm(); }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" dir="ltr">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Category" : "Add Category"}</DialogTitle>
