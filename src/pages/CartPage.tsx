@@ -11,7 +11,7 @@ function CartItemImage({ item }: { item: { product: { imageUrl?: string; emoji: 
     <img
       src={item.product.imageUrl}
       alt={item.product.nameAr}
-      className="w-full h-full object-cover"
+      className="w-full h-full object-cover aspect-square"
       onError={() => setImgError(true)}
     />
   ) : (
@@ -69,11 +69,12 @@ export default function CartPage() {
               transition={{ delay: index * 0.1 }}
               className="bg-card rounded-2xl p-4 flex items-center gap-4"
             >
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-secondary/50 flex items-center justify-center">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-secondary/50 flex items-center justify-center aspect-square">
                 <CartItemImage item={item} />
               </div>
               <div className="flex-grow min-w-0">
                 <h3 className="font-bold text-foreground text-base md:text-lg truncate">{item.product.nameAr}</h3>
+                <p className="text-muted-foreground text-xs">{item.product.unit}</p>
                 <p className="text-accent font-bold text-lg mt-1">{item.product.price * item.quantity} ج</p>
               </div>
               <div className="flex items-center gap-1">

@@ -47,26 +47,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
-        toast.success(`تم زيادة الكمية: ${product.nameAr} ✅`);
         return prev.map((item) =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      toast.success(`تم إضافة ${product.nameAr} للسلة ✅`);
       return [...prev, { product, quantity: 1 }];
     });
   };
 
   const removeItem = (productId: string) => {
-    setItems((prev) => {
-      const item = prev.find((i) => i.product.id === productId);
-      if (item) {
-        toast.info(`تم إزالة ${item.product.nameAr} من السلة`);
-      }
-      return prev.filter((item) => item.product.id !== productId);
-    });
+    setItems((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -83,7 +75,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setItems([]);
-    toast.info("تم تفريغ السلة");
   };
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);

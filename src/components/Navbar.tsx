@@ -21,12 +21,11 @@ export function Navbar() {
       return;
     }
     tapTimerRef.current = setTimeout(() => {
-      // If only 1 tap, navigate home
       if (tapCountRef.current <= 1) {
         navigate("/");
       }
       tapCountRef.current = 0;
-    }, 600);
+    }, 400);
   }, [navigate]);
 
   return (
@@ -55,12 +54,6 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <Link
-              to="/"
-              className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-            >
-              الرئيسية
-            </Link>
             <Link
               to="/shop"
               className="text-lg font-medium text-foreground hover:text-primary transition-colors"
@@ -98,13 +91,6 @@ export function Navbar() {
             className="md:hidden bg-background border-b-2 border-primary/20"
           >
             <div className="container mx-auto px-4 py-4 flex flex-col gap-4">
-              <Link
-                to="/"
-                className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                الرئيسية
-              </Link>
               <Link
                 to="/shop"
                 className="text-lg font-medium text-foreground hover:text-primary transition-colors py-2"

@@ -1,11 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { ShoppingCart, ArrowLeft } from "lucide-react";
 
 export function CartBar() {
   const { itemCount, subtotal } = useCart();
+  const { pathname } = useLocation();
 
-  if (itemCount === 0) return null;
+  if (itemCount === 0 || pathname === "/cart" || pathname === "/checkout" || pathname === "/order-confirmed") return null;
 
   return (
     <div
