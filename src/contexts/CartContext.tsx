@@ -47,14 +47,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
-        toast.success(`تم زيادة الكمية: ${product.nameAr} ✅`);
         return prev.map((item) =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      toast.success(`تم إضافة ${product.nameAr} للسلة ✅`);
       return [...prev, { product, quantity: 1 }];
     });
   };
