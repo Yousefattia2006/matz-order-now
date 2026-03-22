@@ -71,11 +71,13 @@ export default function CartPage() {
                 transition={{ delay: index * 0.05 }}
                 className="flex items-center gap-3"
               >
-                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-secondary/50 flex items-center justify-center">
-                  <CartItemImage item={item} />
+                <div className="shrink-0 flex flex-col items-center gap-1">
+                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-secondary/50 flex items-center justify-center">
+                    <CartItemImage item={item} />
+                  </div>
+                  <p className="font-bold text-foreground text-[11px] text-center leading-tight max-w-[56px] truncate">{item.product.nameAr}</p>
                 </div>
                 <div className="flex-grow min-w-0">
-                  <p className="font-bold text-foreground truncate text-sm">{item.product.nameAr}</p>
                   <p className="text-sm text-muted-foreground">{item.quantity} × {item.product.price} ج</p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
