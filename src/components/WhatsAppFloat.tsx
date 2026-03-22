@@ -2,7 +2,7 @@ import { MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function WhatsAppFloat() {
-  const whatsappNumber = "201093363030";
+  const whatsappNumber = "201555541885";
   const message = encodeURIComponent("مرحباً، عندي استفسار عن TazaMart");
 
   return (

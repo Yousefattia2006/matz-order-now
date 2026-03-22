@@ -111,7 +111,7 @@ export default function OrderConfirmed() {
           className="space-y-4"
         >
           <a
-            href="https://wa.me/201093363030"
+            href="https://wa.me/201555541885"
             target="_blank"
             rel="noopener noreferrer"
             className="block"
