@@ -3,9 +3,71 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProducts } from "@/hooks/useProducts";
 import { useOffers } from "@/hooks/useOffers";
+import { useCart } from "@/contexts/CartContext";
 import { ProductCard } from "@/components/ProductCard";
 import { SpecialOfferPopup } from "@/components/SpecialOfferPopup";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Plus, Minus } from "lucide-react";
+import type { Product } from "@/data/products";
+
+function offerToProduct(offer: any): Product {
+  return {
+    id: `offer-${offer.id}`,
+    nameAr: offer.titleAr,
+    emoji: "🔥",
+    imageUrl: offer.imageUrl || undefined,
+    price: offer.price,
+    unit: "عرض",
+    categoryId: "offers",
+    isActive: true,
+  };
+}
+
+function OfferCard({ offer }: { offer: any }) {
+  const { items, addItem, updateQuantity } = useCart();
+  const [imgError, setImgError] = useState(false);
+  const product = offerToProduct(offer);
+  const cartItem = items.find((item) => item.product.id === product.id);
+  const quantity = cartItem?.quantity || 0;
+
+  return (
+    <div className="min-w-[180px] max-w-[200px] bg-card rounded-2xl border border-primary/20 overflow-hidden shrink-0 flex flex-col">
+      <div className="relative w-full aspect-[4/3] bg-secondary/50 flex items-center justify-center overflow-hidden">
+        {offer.imageUrl && !imgError ? (
+          <img src={offer.imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" onError={() => setImgError(true)} />
+        ) : (
+          <span className="text-5xl select-none">🔥</span>
+        )}
+      </div>
+      <div className="p-3 flex flex-col flex-1">
+        <h3 className="font-bold text-foreground text-sm leading-tight">{offer.titleAr}</h3>
+        {offer.descriptionAr && (
+          <p className="text-muted-foreground text-xs mt-1 line-clamp-2">{offer.descriptionAr}</p>
+        )}
+        {offer.price > 0 && (
+          <p className="font-bold text-accent text-lg mt-auto pt-1">{offer.price} ج</p>
+        )}
+        {quantity === 0 ? (
+          <Button variant="default" size="default" className="w-full mt-2 gap-1 text-sm" onClick={() => addItem(product)}>
+            <Plus className="h-4 w-4" />
+            أضف للسلة
+          </Button>
+        ) : (
+          <div className="flex items-center justify-between mt-2 bg-primary/10 rounded-xl p-1">
+            <Button variant="default" size="icon" className="h-9 w-9 rounded-lg" onClick={() => updateQuantity(product.id, quantity - 1)}>
+              <Minus className="h-4 w-4" />
+            </Button>
+            <span className="text-lg font-bold text-foreground min-w-[30px] text-center">{quantity}</span>
+            <Button variant="default" size="icon" className="h-9 w-9 rounded-lg" onClick={() => updateQuantity(product.id, quantity + 1)}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -37,25 +99,7 @@ export default function Index() {
             <h2 className="text-xl md:text-2xl font-bold text-foreground mb-3">🔥 عروض مميزة</h2>
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
               {activeOffers.map((offer) => (
-                <div
-                  key={offer.id}
-                  className="min-w-[260px] max-w-[300px] bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl border border-primary/20 overflow-hidden shrink-0"
-                >
-                  {offer.imageUrl && (
-                    <div className="w-full aspect-square overflow-hidden">
-                      <img src={offer.imageUrl} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div className="p-3">
-                    <h3 className="font-bold text-foreground">{offer.titleAr}</h3>
-                    {offer.descriptionAr && (
-                      <p className="text-muted-foreground text-sm mt-1 line-clamp-2">{offer.descriptionAr}</p>
-                    )}
-                    {offer.price > 0 && (
-                      <p className="font-bold text-accent text-lg mt-1">{offer.price} ج</p>
-                    )}
-                  </div>
-                </div>
+                <OfferCard key={offer.id} offer={offer} />
               ))}
             </div>
           </div>
