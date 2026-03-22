@@ -60,7 +60,7 @@ export default function Checkout() {
       subtotal, deliveryFee, total,
     }));
 
-    const whatsappUrl = `https://wa.me/201093363030?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/201555541885?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
     
     setTimeout(() => {

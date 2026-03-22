@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Phone, MessageCircle, MapPin } from "lucide-react";
 
 export function Footer() {
-  const whatsappNumber = "201093363030";
+  const whatsappNumber = "201555541885";
 
   return (
     <footer className="bg-primary text-primary-foreground py-12 mt-16">
@@ -56,11 +56,11 @@ export function Footer() {
               <li className="flex items-center gap-3">
                 <Phone className="h-5 w-5" />
                 <a
-                  href="tel:+201093363030"
+                  href="tel:+201555541885"
                   className="text-primary-foreground/80 hover:text-primary-foreground text-lg"
                   dir="ltr"
                 >
-                  +20 109 336 3030
+                  +20 155 554 1885
                 </a>
               </li>
               <li className="flex items-center gap-3">
