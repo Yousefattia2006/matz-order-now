@@ -21,12 +21,11 @@ export function Navbar() {
       return;
     }
     tapTimerRef.current = setTimeout(() => {
-      // If only 1 tap, navigate home
       if (tapCountRef.current <= 1) {
         navigate("/");
       }
       tapCountRef.current = 0;
-    }, 600);
+    }, 400);
   }, [navigate]);
 
   return (
