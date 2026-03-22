@@ -32,8 +32,8 @@ function OfferCard({ offer }: { offer: any }) {
   const quantity = cartItem?.quantity || 0;
 
   return (
-    <div className="min-w-[180px] max-w-[200px] bg-card rounded-2xl border border-primary/20 overflow-hidden shrink-0 flex flex-col">
-      <div className="relative w-full aspect-[4/3] bg-secondary/50 flex items-center justify-center overflow-hidden">
+    <div className="min-w-[130px] max-w-[150px] bg-card rounded-xl border border-primary/20 overflow-hidden shrink-0 flex flex-col">
+      <div className="relative w-full aspect-square bg-secondary/50 flex items-center justify-center overflow-hidden">
         {offer.imageUrl && !imgError ? (
           <img src={offer.imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" onError={() => setImgError(true)} />
         ) : (
