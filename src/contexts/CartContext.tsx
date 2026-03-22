@@ -58,13 +58,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeItem = (productId: string) => {
-    setItems((prev) => {
-      const item = prev.find((i) => i.product.id === productId);
-      if (item) {
-        toast.info(`تم إزالة ${item.product.nameAr} من السلة`);
-      }
-      return prev.filter((item) => item.product.id !== productId);
-    });
+    setItems((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
