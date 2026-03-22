@@ -55,12 +55,6 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link
-              to="/"
-              className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-            >
-              الرئيسية
-            </Link>
-            <Link
               to="/shop"
               className="text-lg font-medium text-foreground hover:text-primary transition-colors"
             >
