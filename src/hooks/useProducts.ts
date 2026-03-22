@@ -1,51 +1,72 @@
-import { useState, useEffect, useCallback } from "react";
-import { products as defaultProducts, Product } from "@/data/products";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import type { Product } from "@/data/products";
 
-const STORAGE_KEY = "tazamart-products";
-
-function loadProducts(): Product[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return defaultProducts;
-}
-
-function saveProducts(products: Product[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-  window.dispatchEvent(new Event("products-updated"));
+function mapRow(row: any): Product {
+  return {
+    id: row.id,
+    nameAr: row.name_ar,
+    nameEn: row.name_en ?? undefined,
+    emoji: row.emoji,
+    imageUrl: row.image_url ?? undefined,
+    price: Number(row.price),
+    unit: row.unit,
+    categoryId: row.category_id,
+    isActive: row.is_active,
+    isFeatured: row.is_featured,
+  };
 }
 
 export function useProducts() {
-  const [productList, setProductList] = useState<Product[]>(loadProducts);
+  const { data: products = [], refetch } = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map(mapRow);
+    },
+    staleTime: 1000 * 60,
+  });
 
-  useEffect(() => {
-    const handler = () => setProductList(loadProducts());
-    window.addEventListener("products-updated", handler);
-    window.addEventListener("storage", handler);
-    return () => {
-      window.removeEventListener("products-updated", handler);
-      window.removeEventListener("storage", handler);
-    };
-  }, []);
+  const addProduct = async (product: Product) => {
+    const { error } = await supabase.from("products").insert({
+      id: product.id,
+      name_ar: product.nameAr,
+      emoji: product.emoji,
+      image_url: product.imageUrl || null,
+      price: product.price,
+      unit: product.unit,
+      category_id: product.categoryId,
+      is_active: product.isActive,
+      is_featured: product.isFeatured ?? false,
+    });
+    if (error) throw error;
+    await refetch();
+  };
 
-  const addProduct = useCallback((product: Product) => {
-    const updated = [product, ...loadProducts()];
-    saveProducts(updated);
-    setProductList(updated);
-  }, []);
+  const updateProduct = async (product: Product) => {
+    const { error } = await supabase.from("products").update({
+      name_ar: product.nameAr,
+      emoji: product.emoji,
+      image_url: product.imageUrl || null,
+      price: product.price,
+      unit: product.unit,
+      category_id: product.categoryId,
+      is_active: product.isActive,
+      is_featured: product.isFeatured ?? false,
+    }).eq("id", product.id);
+    if (error) throw error;
+    await refetch();
+  };
 
-  const updateProduct = useCallback((product: Product) => {
-    const updated = loadProducts().map((p) => (p.id === product.id ? product : p));
-    saveProducts(updated);
-    setProductList(updated);
-  }, []);
+  const deleteProduct = async (id: string) => {
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) throw error;
+    await refetch();
+  };
 
-  const deleteProduct = useCallback((id: string) => {
-    const updated = loadProducts().filter((p) => p.id !== id);
-    saveProducts(updated);
-    setProductList(updated);
-  }, []);
-
-  return { products: productList, addProduct, updateProduct, deleteProduct };
+  return { products, addProduct, updateProduct, deleteProduct, refetch };
 }

@@ -1,31 +1,62 @@
-import { useState, createContext, useContext, ReactNode, useCallback } from "react";
+import { useState, createContext, useContext, ReactNode, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminContextType {
   isLoggedIn: boolean;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
-
-const ADMIN_KEY = "tazamart-admin-logged-in";
-const ADMIN_PASSWORD = "taza2024";
+const ADMIN_KEY = "tazamart-admin-session";
 
 export function AdminProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem(ADMIN_KEY) === "true");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const login = (password: string) => {
-    if (password === ADMIN_PASSWORD) {
-      setIsLoggedIn(true);
-      sessionStorage.setItem(ADMIN_KEY, "true");
-      return true;
+  // Restore session on mount
+  useEffect(() => {
+    const stored = sessionStorage.getItem(ADMIN_KEY);
+    if (stored) {
+      try {
+        const { access_token, refresh_token } = JSON.parse(stored);
+        supabase.auth.setSession({ access_token, refresh_token }).then(({ data }) => {
+          if (data.session) {
+            setIsLoggedIn(true);
+          } else {
+            sessionStorage.removeItem(ADMIN_KEY);
+          }
+        });
+      } catch {
+        sessionStorage.removeItem(ADMIN_KEY);
+      }
     }
-    return false;
-  };
+  }, []);
 
-  const logout = useCallback(() => {
-    setIsLoggedIn(false);
+  const login = useCallback(async (password: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-login", {
+        body: { password },
+      });
+
+      if (error || !data?.session) {
+        return false;
+      }
+
+      const { access_token, refresh_token } = data.session;
+      await supabase.auth.setSession({ access_token, refresh_token });
+
+      sessionStorage.setItem(ADMIN_KEY, JSON.stringify({ access_token, refresh_token }));
+      setIsLoggedIn(true);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     sessionStorage.removeItem(ADMIN_KEY);
+    setIsLoggedIn(false);
     window.location.href = "/";
   }, []);
 
