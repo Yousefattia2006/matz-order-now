@@ -59,6 +59,7 @@ export type Database = {
           name_ar: string
           name_en: string | null
           price: number
+          sort_order: number
           unit: string
         }
         Insert: {
@@ -72,6 +73,7 @@ export type Database = {
           name_ar: string
           name_en?: string | null
           price?: number
+          sort_order?: number
           unit?: string
         }
         Update: {
@@ -85,6 +87,7 @@ export type Database = {
           name_ar?: string
           name_en?: string | null
           price?: number
+          sort_order?: number
           unit?: string
         }
         Relationships: [

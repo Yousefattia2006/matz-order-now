@@ -42,49 +42,57 @@ export function SpecialOfferPopup() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl border-0" dir="rtl">
-        <div className="relative">
-          <button
-            onClick={() => setOpen(false)}
-            className="absolute top-3 left-3 z-10 bg-background/80 backdrop-blur rounded-full p-1.5 hover:bg-background transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+      <DialogContent
+        className="max-w-[340px] w-[90vw] p-0 overflow-hidden rounded-2xl border-0 gap-0 [&>button]:hidden"
+        dir="rtl"
+      >
+        {/* Single close button */}
+        <button
+          onClick={() => setOpen(false)}
+          className="absolute top-2.5 left-2.5 z-20 bg-background/80 backdrop-blur rounded-full p-1.5 hover:bg-background transition-colors shadow-sm"
+          aria-label="إغلاق"
+        >
+          <X className="h-4 w-4" />
+        </button>
 
-          <div className="bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground text-center">
-            <h2 className="text-2xl font-bold mb-1">🎉 عروض خاصة!</h2>
-            <p className="text-primary-foreground/80">لا تفوت عروضنا الحصرية</p>
-          </div>
+        <div className="bg-gradient-to-br from-primary to-primary/80 px-4 py-4 text-primary-foreground text-center">
+          <h2 className="text-lg font-bold">🎉 عروض خاصة!</h2>
+          <p className="text-primary-foreground/80 text-sm">لا تفوت عروضنا الحصرية</p>
+        </div>
 
-          <div className="p-4 space-y-3 max-h-[50vh] overflow-y-auto">
-            {offers.map((offer) => (
-              <div key={offer.id} className="bg-card rounded-xl border border-border overflow-hidden">
-                {offer.image_url && (
-                  <div className="w-full aspect-square overflow-hidden">
-                    <img src={offer.image_url} alt="" className="w-full h-full object-cover" />
-                  </div>
-                )}
-                <div className="p-4">
-                  <h3 className="font-bold text-foreground text-lg">{offer.title_ar}</h3>
-                  {offer.description_ar && (
-                    <p className="text-muted-foreground text-sm mt-1">{offer.description_ar}</p>
-                  )}
-                  {(offer as any).price > 0 && (
-                    <p className="font-bold text-accent text-xl mt-2">{(offer as any).price} ج</p>
-                  )}
+        <div className="px-3 py-3 space-y-2.5 max-h-[45vh] overflow-y-auto">
+          {offers.map((offer) => (
+            <div key={offer.id} className="bg-card rounded-xl border border-border overflow-hidden">
+              {offer.image_url && (
+                <div className="w-full aspect-[4/3] overflow-hidden">
+                  <img
+                    src={offer.image_url}
+                    alt={offer.title_ar}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
+              )}
+              <div className="p-3">
+                <h3 className="font-bold text-foreground text-base leading-snug">{offer.title_ar}</h3>
+                {offer.description_ar && (
+                  <p className="text-muted-foreground text-xs mt-1 line-clamp-2">{offer.description_ar}</p>
+                )}
+                {(offer.price ?? 0) > 0 && (
+                  <p className="font-bold text-accent text-lg mt-1.5">{offer.price} ج</p>
+                )}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
-          <div className="p-4 border-t border-border">
-            <Button
-              className="w-full text-lg py-6"
-              onClick={() => { setOpen(false); navigate("/shop"); }}
-            >
-              تسوق الآن 🛒
-            </Button>
-          </div>
+        <div className="px-3 pb-3 pt-1">
+          <Button
+            className="w-full text-base py-5"
+            onClick={() => { setOpen(false); navigate("/shop"); }}
+          >
+            تسوق الآن 🛒
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
