@@ -24,6 +24,7 @@ export function useProducts() {
       const { data, error } = await supabase
         .from("products")
         .select("*")
+        .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []).map(mapRow);
