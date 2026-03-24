@@ -53,15 +53,14 @@ function SortableProductCard({ row, index }: { row: any; index: number }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 50 : 1,
-    touchAction: "none" as const,
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative cursor-grab active:cursor-grabbing">
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative cursor-grab active:cursor-grabbing touch-manipulation">
       <ProductCard product={mapRow(row)} />
       <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow">
         {index + 1}
@@ -103,6 +102,9 @@ function CategoryProductsView({ category, onBack }: { category: Category; onBack
 
     const reordered = arrayMove(products, oldIndex, newIndex);
 
+    // Optimistic update: instantly show new order
+    queryClient.setQueryData(["category-products", category.id], reordered);
+
     setSaving(true);
     try {
       await Promise.all(
@@ -110,10 +112,11 @@ function CategoryProductsView({ category, onBack }: { category: Category; onBack
           supabase.from("products").update({ sort_order: i } as any).eq("id", p.id)
         )
       );
-      await refetch();
       queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (e) {
       console.error("Reorder failed:", e);
+      // Revert on failure
+      await refetch();
     }
     setSaving(false);
   };
