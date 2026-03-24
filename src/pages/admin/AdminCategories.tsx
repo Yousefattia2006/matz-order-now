@@ -102,6 +102,9 @@ function CategoryProductsView({ category, onBack }: { category: Category; onBack
 
     const reordered = arrayMove(products, oldIndex, newIndex);
 
+    // Optimistic update: instantly show new order
+    queryClient.setQueryData(["category-products", category.id], reordered);
+
     setSaving(true);
     try {
       await Promise.all(
@@ -109,10 +112,11 @@ function CategoryProductsView({ category, onBack }: { category: Category; onBack
           supabase.from("products").update({ sort_order: i } as any).eq("id", p.id)
         )
       );
-      await refetch();
       queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (e) {
       console.error("Reorder failed:", e);
+      // Revert on failure
+      await refetch();
     }
     setSaving(false);
   };
