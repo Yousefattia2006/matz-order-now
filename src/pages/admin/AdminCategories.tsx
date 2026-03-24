@@ -258,7 +258,8 @@ function CategoryFormDialog({
     }
   }, [open, category]);
 
-
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" dir="ltr">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Category" : "Add Category"}</DialogTitle>
