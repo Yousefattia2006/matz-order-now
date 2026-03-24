@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -248,22 +248,17 @@ function CategoryFormDialog({
   const [slug, setSlug] = useState("");
   const [color, setColor] = useState("bg-gray-100");
 
-  // Reset form on open
-  const resetForm = () => {
-    setNameAr(category?.name_ar ?? "");
-    setNameEn(category?.name_en ?? "");
-    setEmoji(category?.emoji ?? "📦");
-    setSlug(category?.slug ?? "");
-    setColor(category?.color ?? "bg-gray-100");
-  };
+  useEffect(() => {
+    if (open) {
+      setNameAr(category?.name_ar ?? "");
+      setNameEn(category?.name_en ?? "");
+      setEmoji(category?.emoji ?? "📦");
+      setSlug(category?.slug ?? "");
+      setColor(category?.color ?? "bg-gray-100");
+    }
+  }, [open, category]);
 
-  // Use effect equivalent via key
-  if (open) {
-    // handled by onOpenChange
-  }
 
-  return (
-    <Dialog open={open} onOpenChange={(v) => { if (v) resetForm(); onOpenChange(v); }}>
       <DialogContent className="max-w-md" dir="ltr">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Category" : "Add Category"}</DialogTitle>
