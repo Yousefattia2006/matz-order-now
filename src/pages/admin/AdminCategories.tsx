@@ -1,12 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/input";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, ArrowLeft, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import type { Product } from "@/data/products";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Category {
   id: string;
@@ -33,6 +49,27 @@ function mapRow(row: any): Product {
   };
 }
 
+function SortableProductCard({ row, index }: { row: any; index: number }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 1,
+    touchAction: "none" as const,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative cursor-grab active:cursor-grabbing">
+      <ProductCard product={mapRow(row)} />
+      <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow">
+        {index + 1}
+      </div>
+    </div>
+  );
+}
+
 function CategoryProductsView({ category, onBack }: { category: Category; onBack: () => void }) {
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
@@ -51,20 +88,28 @@ function CategoryProductsView({ category, onBack }: { category: Category; onBack
     },
   });
 
-  const moveProduct = async (index: number, direction: "up" | "down") => {
-    if (direction === "up" && index === 0) return;
-    if (direction === "down" && index === products.length - 1) return;
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = products.findIndex((p) => p.id === active.id);
+    const newIndex = products.findIndex((p) => p.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(products, oldIndex, newIndex);
 
     setSaving(true);
-    const swapIndex = direction === "up" ? index - 1 : index + 1;
-    const currentProduct = products[index];
-    const swapProduct = products[swapIndex];
-
     try {
-      await Promise.all([
-        supabase.from("products").update({ sort_order: swapIndex } as any).eq("id", currentProduct.id),
-        supabase.from("products").update({ sort_order: index } as any).eq("id", swapProduct.id),
-      ]);
+      await Promise.all(
+        reordered.map((p, i) =>
+          supabase.from("products").update({ sort_order: i } as any).eq("id", p.id)
+        )
+      );
       await refetch();
       queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (e) {
@@ -82,8 +127,9 @@ function CategoryProductsView({ category, onBack }: { category: Category; onBack
         <span className="text-3xl">{category.emoji}</span>
         <div>
           <h1 className="text-2xl font-bold text-foreground">{category.name_ar}</h1>
-          <p className="text-sm text-muted-foreground">{products.length} products · Drag to reorder</p>
+          <p className="text-sm text-muted-foreground">{products.length} products · Press & hold to reorder</p>
         </div>
+        {saving && <span className="text-xs text-muted-foreground animate-pulse">Saving...</span>}
       </div>
 
       {products.length === 0 ? (
@@ -92,36 +138,15 @@ function CategoryProductsView({ category, onBack }: { category: Category; onBack
           <p className="text-muted-foreground">No products in this category</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-          {products.map((row, index) => (
-            <div key={row.id} className="relative group">
-              <ProductCard product={mapRow(row)} />
-              <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-8 w-8 bg-background/90 shadow-md"
-                  disabled={index === 0 || saving}
-                  onClick={() => moveProduct(index, "up")}
-                >
-                  <ChevronUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-8 w-8 bg-background/90 shadow-md"
-                  disabled={index === products.length - 1 || saving}
-                  onClick={() => moveProduct(index, "down")}
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow">
-                {index + 1}
-              </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={products.map((p) => p.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+              {products.map((row, index) => (
+                <SortableProductCard key={row.id} row={row} index={index} />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
@@ -217,45 +242,45 @@ function CategoryFormDialog({
   open: boolean; onOpenChange: (v: boolean) => void; category: Category | null; onSave: (c: Category, isEdit: boolean) => void;
 }) {
   const isEdit = !!category;
-
   const [nameAr, setNameAr] = useState("");
   const [nameEn, setNameEn] = useState("");
   const [emoji, setEmoji] = useState("📦");
   const [slug, setSlug] = useState("");
   const [color, setColor] = useState("bg-gray-100");
 
-  useEffect(() => {
-    if (open) {
-      setNameAr(category?.name_ar ?? "");
-      setNameEn(category?.name_en ?? "");
-      setEmoji(category?.emoji ?? "📦");
-      setSlug(category?.slug ?? "");
-      setColor(category?.color ?? "bg-gray-100");
-    }
-  }, [open, category]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const id = isEdit && category ? category.id : slug.toLowerCase().replace(/\s+/g, "-");
-    const cat: Category = {
-      id,
-      name_ar: nameAr,
-      name_en: nameEn || null,
-      emoji,
-      slug: id,
-      color,
-      sort_order: category?.sort_order ?? 0,
-    };
-    onSave(cat, isEdit);
+  // Reset form on open
+  const resetForm = () => {
+    setNameAr(category?.name_ar ?? "");
+    setNameEn(category?.name_en ?? "");
+    setEmoji(category?.emoji ?? "📦");
+    setSlug(category?.slug ?? "");
+    setColor(category?.color ?? "bg-gray-100");
   };
 
+  // Use effect equivalent via key
+  if (open) {
+    // handled by onOpenChange
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (v) resetForm(); onOpenChange(v); }}>
       <DialogContent className="max-w-md" dir="ltr">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Category" : "Add Category"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          const id = isEdit && category ? category.id : slug.toLowerCase().replace(/\s+/g, "-");
+          onSave({
+            id,
+            name_ar: nameAr,
+            name_en: nameEn || null,
+            emoji,
+            slug: id,
+            color,
+            sort_order: category?.sort_order ?? 0,
+          }, isEdit);
+        }} className="space-y-4">
           <div>
             <label className="text-sm font-medium">Name (Arabic) *</label>
             <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} required dir="rtl" />
