@@ -60,7 +60,7 @@ function SortableProductCard({ row, index }: { row: any; index: number }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative cursor-grab active:cursor-grabbing">
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative cursor-grab active:cursor-grabbing touch-manipulation">
       <ProductCard product={mapRow(row)} />
       <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow">
         {index + 1}
