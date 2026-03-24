@@ -5,7 +5,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useOffers } from "@/hooks/useOffers";
 import { useCart } from "@/contexts/CartContext";
 import { ProductCard } from "@/components/ProductCard";
-import { SpecialOfferPopup } from "@/components/SpecialOfferPopup";
+
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
@@ -91,7 +91,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen py-4 md:py-8">
-      <SpecialOfferPopup />
+      
       <div className="container mx-auto px-4">
         {/* Offers Section */}
         {activeOffers.length > 0 && (
