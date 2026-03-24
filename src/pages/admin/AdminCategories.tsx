@@ -53,11 +53,10 @@ function SortableProductCard({ row, index }: { row: any; index: number }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.id });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 50 : 1,
-    touchAction: "none" as const,
   };
 
   return (
