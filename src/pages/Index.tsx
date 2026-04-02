@@ -144,17 +144,9 @@ export default function Index() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="rounded-xl overflow-hidden border border-border">
-                <Skeleton className="w-full aspect-square" />
-                <div className="p-3 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-5 w-1/3" />
-                  <Skeleton className="h-9 w-full" />
-                </div>
-              </div>
-            ))}
+          <div className="text-center py-16">
+            <div className="text-5xl mb-4 animate-pulse">🛒</div>
+            <p className="text-muted-foreground text-lg">جاري تحميل المنتجات...</p>
           </div>
         ) : filteredProducts.length > 0 ? (
           <motion.div
