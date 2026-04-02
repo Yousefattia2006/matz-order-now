@@ -5,6 +5,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useOffers } from "@/hooks/useOffers";
 import { useCart } from "@/contexts/CartContext";
 import { ProductCard } from "@/components/ProductCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,7 @@ function OfferCard({ offer }: { offer: any }) {
 
 export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { products } = useProducts();
+  const { products, isLoading } = useProducts();
   const { activeOffers } = useOffers();
 
   const { data: categories = [] } = useQuery({
@@ -143,7 +144,20 @@ export default function Index() {
           </div>
         </div>
 
-        {filteredProducts.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="rounded-xl overflow-hidden border border-border">
+                <Skeleton className="w-full aspect-square" />
+                <div className="p-3 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-5 w-1/3" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredProducts.length > 0 ? (
           <motion.div
             key={selectedCategory || "all"}
             initial={{ opacity: 0 }}
