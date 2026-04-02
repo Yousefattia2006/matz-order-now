@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProducts } from "@/hooks/useProducts";
 import { useOffers } from "@/hooks/useOffers";
 import { ProductCard } from "@/components/ProductCard";
-import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
 export default function Shop() {

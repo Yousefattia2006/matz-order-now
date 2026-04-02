@@ -61,12 +61,9 @@ export default function Checkout() {
     }));
 
     const whatsappUrl = `https://wa.me/201555541885?text=${encodeURIComponent(message)}`;
+    clearCart();
+    navigate("/order-confirmed");
     window.open(whatsappUrl, "_blank");
-    
-    setTimeout(() => {
-      clearCart();
-      navigate("/order-confirmed");
-    }, 500);
   };
 
   if (items.length === 0) {

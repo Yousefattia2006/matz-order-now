@@ -5,7 +5,6 @@ import { useProducts } from "@/hooks/useProducts";
 import { useOffers } from "@/hooks/useOffers";
 import { useCart } from "@/contexts/CartContext";
 import { ProductCard } from "@/components/ProductCard";
-import { Skeleton } from "@/components/ui/skeleton";
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
