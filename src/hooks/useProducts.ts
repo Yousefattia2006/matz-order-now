@@ -18,7 +18,7 @@ function mapRow(row: any): Product {
 }
 
 export function useProducts() {
-  const { data: products = [], refetch } = useQuery({
+  const { data: products = [], isLoading, refetch } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,5 +69,5 @@ export function useProducts() {
     await refetch();
   };
 
-  return { products, addProduct, updateProduct, deleteProduct, refetch };
+  return { products, isLoading, addProduct, updateProduct, deleteProduct, refetch };
 }
