@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDeliveryZones } from "@/hooks/useDeliveryZones";
-import { DeliveryZone } from "@/data/deliveryZones";
+import type { DeliveryZone } from "@/hooks/useDeliveryZones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,10 +8,11 @@ import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminDeliveryZones() {
-  const { zones, addZone, updateZone, deleteZone } = useDeliveryZones();
+  const { zones, addZone, updateZone, deleteZone, isLoading } = useDeliveryZones();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ nameAr: "", nameEn: "", fee: "" });
+  const [saving, setSaving] = useState(false);
 
   const resetForm = () => {
     setForm({ nameAr: "", nameEn: "", fee: "" });
@@ -19,19 +20,26 @@ export default function AdminDeliveryZones() {
     setEditingId(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.nameAr.trim()) { toast.error("Enter location name"); return; }
     if (!form.fee || isNaN(Number(form.fee))) { toast.error("Enter valid delivery fee"); return; }
 
-    if (editingId) {
-      updateZone({ id: editingId, nameAr: form.nameAr, nameEn: form.nameEn, fee: Number(form.fee), isActive: true });
-      toast.success("Location updated");
-    } else {
-      const id = form.nameEn.toLowerCase().replace(/\s+/g, "-") || `zone-${Date.now()}`;
-      addZone({ id, nameAr: form.nameAr, nameEn: form.nameEn, fee: Number(form.fee), isActive: true });
-      toast.success("Location added");
+    setSaving(true);
+    try {
+      if (editingId) {
+        await updateZone({ id: editingId, nameAr: form.nameAr, nameEn: form.nameEn, fee: Number(form.fee), isActive: true });
+        toast.success("Location updated");
+      } else {
+        const id = form.nameEn.toLowerCase().replace(/\s+/g, "-") || `zone-${Date.now()}`;
+        await addZone({ id, nameAr: form.nameAr, nameEn: form.nameEn, fee: Number(form.fee), isActive: true });
+        toast.success("Location added");
+      }
+      resetForm();
+    } catch (e: any) {
+      toast.error(e.message || "Error saving");
+    } finally {
+      setSaving(false);
     }
-    resetForm();
   };
 
   const handleEdit = (zone: DeliveryZone) => {
@@ -40,10 +48,14 @@ export default function AdminDeliveryZones() {
     setShowForm(true);
   };
 
-  const handleDelete = (zone: DeliveryZone) => {
+  const handleDelete = async (zone: DeliveryZone) => {
     if (confirm(`Delete "${zone.nameAr}"?`)) {
-      deleteZone(zone.id);
-      toast.success("Location deleted");
+      try {
+        await deleteZone(zone.id);
+        toast.success("Location deleted");
+      } catch (e: any) {
+        toast.error(e.message || "Error deleting");
+      }
     }
   };
 
@@ -74,27 +86,31 @@ export default function AdminDeliveryZones() {
             </div>
           </div>
           <div className="flex gap-2 mt-4">
-            <Button onClick={handleSave} className="gap-2"><Check className="h-4 w-4" /> Save</Button>
+            <Button onClick={handleSave} className="gap-2" disabled={saving}><Check className="h-4 w-4" /> Save</Button>
             <Button variant="outline" onClick={resetForm} className="gap-2"><X className="h-4 w-4" /> Cancel</Button>
           </div>
         </div>
       )}
 
-      <div className="space-y-2">
-        {zones.map((zone) => (
-          <div key={zone.id} className="flex items-center justify-between bg-card rounded-xl p-3 border border-border">
-            <div className="min-w-0">
-              <p className="font-bold text-foreground truncate">{zone.nameAr}</p>
-              <p className="text-sm text-muted-foreground">{zone.nameEn} — {zone.fee} EGP</p>
+      {isLoading ? (
+        <p className="text-muted-foreground text-center py-8">Loading...</p>
+      ) : (
+        <div className="space-y-2">
+          {zones.map((zone) => (
+            <div key={zone.id} className="flex items-center justify-between bg-card rounded-xl p-3 border border-border">
+              <div className="min-w-0">
+                <p className="font-bold text-foreground truncate">{zone.nameAr}</p>
+                <p className="text-sm text-muted-foreground">{zone.nameEn} — {zone.fee} EGP</p>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <Button variant="ghost" size="icon" onClick={() => handleEdit(zone)}><Pencil className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(zone)}><Trash2 className="h-4 w-4" /></Button>
+              </div>
             </div>
-            <div className="flex gap-1 shrink-0">
-              <Button variant="ghost" size="icon" onClick={() => handleEdit(zone)}><Pencil className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(zone)}><Trash2 className="h-4 w-4" /></Button>
-            </div>
-          </div>
-        ))}
-        {zones.length === 0 && <p className="text-muted-foreground text-center py-8">No delivery locations yet.</p>}
-      </div>
+          ))}
+          {zones.length === 0 && <p className="text-muted-foreground text-center py-8">No delivery locations yet.</p>}
+        </div>
+      )}
     </div>
   );
 }
