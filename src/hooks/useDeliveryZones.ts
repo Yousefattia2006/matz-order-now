@@ -1,57 +1,93 @@
-import { useState, useEffect, useCallback } from "react";
-import { deliveryZones as defaultZones, DeliveryZone } from "@/data/deliveryZones";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const STORAGE_KEY = "tazamart-delivery-zones";
-
-function loadZones(): DeliveryZone[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return defaultZones;
+export interface DeliveryZone {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  fee: number;
+  isActive: boolean;
 }
 
-function saveZones(zones: DeliveryZone[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(zones));
-  window.dispatchEvent(new Event("zones-updated"));
+function mapRow(row: any): DeliveryZone {
+  return {
+    id: row.id,
+    nameAr: row.name_ar,
+    nameEn: row.name_en || "",
+    fee: Number(row.fee),
+    isActive: row.is_active,
+  };
 }
 
 export function useDeliveryZones() {
-  const [zones, setZones] = useState<DeliveryZone[]>(loadZones);
+  const queryClient = useQueryClient();
+  const queryKey = ["delivery-zones"];
 
-  useEffect(() => {
-    const handler = () => setZones(loadZones());
-    window.addEventListener("zones-updated", handler);
-    window.addEventListener("storage", handler);
-    return () => {
-      window.removeEventListener("zones-updated", handler);
-      window.removeEventListener("storage", handler);
-    };
-  }, []);
+  const { data: zones = [], isLoading } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("delivery_zones")
+        .select("*")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data || []).map(mapRow);
+    },
+  });
 
-  const addZone = useCallback((zone: DeliveryZone) => {
-    const updated = [...loadZones(), zone];
-    saveZones(updated);
-    setZones(updated);
-  }, []);
+  const addZone = useMutation({
+    mutationFn: async (zone: DeliveryZone) => {
+      const { error } = await supabase.from("delivery_zones").insert({
+        id: zone.id,
+        name_ar: zone.nameAr,
+        name_en: zone.nameEn,
+        fee: zone.fee,
+        is_active: zone.isActive,
+        sort_order: zones.length,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+  });
 
-  const updateZone = useCallback((zone: DeliveryZone) => {
-    const updated = loadZones().map((z) => (z.id === zone.id ? zone : z));
-    saveZones(updated);
-    setZones(updated);
-  }, []);
+  const updateZone = useMutation({
+    mutationFn: async (zone: DeliveryZone) => {
+      const { error } = await supabase
+        .from("delivery_zones")
+        .update({
+          name_ar: zone.nameAr,
+          name_en: zone.nameEn,
+          fee: zone.fee,
+          is_active: zone.isActive,
+        })
+        .eq("id", zone.id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+  });
 
-  const deleteZone = useCallback((id: string) => {
-    const updated = loadZones().filter((z) => z.id !== id);
-    saveZones(updated);
-    setZones(updated);
-  }, []);
+  const deleteZone = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("delivery_zones")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+  });
 
-  const getZoneById = useCallback((id: string) => {
-    return loadZones().find((z) => z.id === id);
-  }, []);
+  const getZoneById = (id: string) => zones.find((z) => z.id === id);
 
   const activeZones = zones.filter((z) => z.isActive);
 
-  return { zones, activeZones, addZone, updateZone, deleteZone, getZoneById };
+  return {
+    zones,
+    activeZones,
+    isLoading,
+    addZone: (zone: DeliveryZone) => addZone.mutateAsync(zone),
+    updateZone: (zone: DeliveryZone) => updateZone.mutateAsync(zone),
+    deleteZone: (id: string) => deleteZone.mutateAsync(id),
+    getZoneById,
+  };
 }
