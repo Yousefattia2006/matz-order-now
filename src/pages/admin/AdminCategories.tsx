@@ -160,6 +160,7 @@ export default function AdminCategories() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const { data: categoryList = [] } = useQuery({
     queryKey: ["categories"],
@@ -169,6 +170,36 @@ export default function AdminCategories() {
       return data as Category[];
     },
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = categoryList.findIndex((c) => c.id === active.id);
+    const newIndex = categoryList.findIndex((c) => c.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(categoryList, oldIndex, newIndex);
+    queryClient.setQueryData(["categories"], reordered);
+
+    setSaving(true);
+    try {
+      await Promise.all(
+        reordered.map((c, i) =>
+          supabase.from("categories").update({ sort_order: i }).eq("id", c.id)
+        )
+      );
+    } catch (e) {
+      console.error("Reorder failed:", e);
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    }
+    setSaving(false);
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -202,39 +233,78 @@ export default function AdminCategories() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Categories</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Categories</h1>
+          <p className="text-sm text-muted-foreground">Press & hold to reorder{saving ? " · Saving..." : ""}</p>
+        </div>
         <Button onClick={() => { setEditing(null); setDialogOpen(true); }} className="gap-2">
           <Plus className="h-4 w-4" /> Add Category
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categoryList.map((cat) => (
-          <div
-            key={cat.id}
-            className="bg-card rounded-2xl border border-border p-5 flex items-center justify-between cursor-pointer hover:border-primary/40 transition-colors"
-            onClick={() => setSelectedCategory(cat)}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{cat.emoji}</span>
-              <div>
-                <p className="font-bold text-foreground">{cat.name_ar}</p>
-                <p className="text-sm text-muted-foreground">{cat.name_en} · {cat.slug}</p>
-              </div>
-            </div>
-            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-              <Button variant="ghost" size="icon" onClick={() => { setEditing(cat); setDialogOpen(true); }}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => handleDelete(cat.id)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={categoryList.map((c) => c.id)} strategy={rectSortingStrategy}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categoryList.map((cat, index) => (
+              <SortableCategoryCard
+                key={cat.id}
+                cat={cat}
+                index={index}
+                onEdit={() => { setEditing(cat); setDialogOpen(true); }}
+                onDelete={() => handleDelete(cat.id)}
+                onClick={() => setSelectedCategory(cat)}
+              />
+            ))}
           </div>
-        ))}
-      </div>
+        </SortableContext>
+      </DndContext>
 
       <CategoryFormDialog open={dialogOpen} onOpenChange={setDialogOpen} category={editing} onSave={handleSave} />
+    </div>
+  );
+}
+
+function SortableCategoryCard({
+  cat, index, onEdit, onDelete, onClick,
+}: {
+  cat: Category; index: number; onEdit: () => void; onDelete: () => void; onClick: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: cat.id });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="bg-card rounded-2xl border border-border p-5 flex items-center justify-between cursor-grab active:cursor-grabbing touch-manipulation hover:border-primary/40 transition-colors relative"
+      onClick={onClick}
+    >
+      <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow">
+        {index + 1}
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="text-3xl">{cat.emoji}</span>
+        <div>
+          <p className="font-bold text-foreground">{cat.name_ar}</p>
+          <p className="text-sm text-muted-foreground">{cat.name_en} · {cat.slug}</p>
+        </div>
+      </div>
+      <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+        <Button variant="ghost" size="icon" onClick={onEdit}>
+          <Pencil className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={onDelete}>
+          <Trash2 className="h-4 w-4 text-destructive" />
+        </Button>
+      </div>
     </div>
   );
 }
