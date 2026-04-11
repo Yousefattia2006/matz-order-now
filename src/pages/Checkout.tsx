@@ -55,7 +55,8 @@ export default function Checkout() {
     const zone = getZoneById(formData.zoneId);
     let itemsList = items.map((item) => `- ${item.product.nameAr} × ${item.quantity} = ${item.product.price * item.quantity} ج`).join("\n");
 
-    const message = `🛒 *طلب جديد من TazaMart*\n\n📍 *المنطقة:* ${zone?.nameAr || ""}\n📌 *العنوان:* ${formData.addressText}\n${formData.googleMapsLink ? `🗺 *موقع جوجل ماب:* ${formData.googleMapsLink}` : ""}\n\n📦 *تفاصيل الطلب:*\n${itemsList}\n\n💰 *إجمالي المنتجات:* ${subtotal} ج\n🚚 *رسوم التوصيل:* ${deliveryFee} ج\n✅ *الإجمالي الكلي:* ${total} ج\n\nشكراً لتسوقك مع TazaMart! 💜`;
+    const cleaningLine = cleaningRequested ? `\n🧼 *تنظيف وغسيل:* ${cleaningFee} ج` : "";
+    const message = `🛒 *طلب جديد من TazaMart*\n\n📍 *المنطقة:* ${zone?.nameAr || ""}\n📌 *العنوان:* ${formData.addressText}\n${formData.googleMapsLink ? `🗺 *موقع جوجل ماب:* ${formData.googleMapsLink}` : ""}\n\n📦 *تفاصيل الطلب:*\n${itemsList}\n\n💰 *إجمالي المنتجات:* ${subtotal} ج\n🚚 *رسوم التوصيل:* ${deliveryFee} ج${cleaningLine}\n✅ *الإجمالي الكلي:* ${total} ج${cleaningRequested ? "\n\n⚠️ *ملاحظة:* العميل طلب خدمة تنظيف وغسيل المنتجات" : ""}\n\nشكراً لتسوقك مع TazaMart! 💜`;
 
     sessionStorage.setItem("tazamart-last-order", JSON.stringify({
       zone: zone?.nameAr, address: formData.addressText,
