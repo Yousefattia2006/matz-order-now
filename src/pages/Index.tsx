@@ -70,8 +70,13 @@ function OfferCard({ offer }: { offer: any }) {
 }
 
 export default function Index() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { products, isLoading } = useProducts();
+  const firstCategoryId = categories.length > 0 ? categories[0].id : null;
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(undefined as any);
+
+  // Set default to first category once loaded
+  if (selectedCategory === undefined && categories.length > 0) {
+    setSelectedCategory(categories[0].id);
+  }
   const { activeOffers } = useOffers();
 
   const { data: categories = [] } = useQuery({
