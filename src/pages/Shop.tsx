@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam ?? (undefined as any));
   const { products, isLoading } = useProducts();
   const { activeOffers } = useOffers();
 
@@ -22,6 +22,11 @@ export default function Shop() {
       return data ?? [];
     },
   });
+
+  // Default to first category if no param specified
+  if (selectedCategory === (undefined as any) && categories.length > 0) {
+    setSelectedCategory(categories[0].id);
+  }
 
   const filteredProducts = products.filter((p) => {
     if (!p.isActive) return false;
