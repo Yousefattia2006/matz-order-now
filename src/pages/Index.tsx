@@ -70,7 +70,7 @@ function OfferCard({ offer }: { offer: any }) {
 }
 
 export default function Index() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(undefined as any);
   const { products, isLoading } = useProducts();
   const { activeOffers } = useOffers();
 
@@ -82,6 +82,11 @@ export default function Index() {
       return data ?? [];
     },
   });
+
+  // Default to first category once loaded
+  if (selectedCategory === (undefined as any) && categories.length > 0) {
+    setSelectedCategory(categories[0].id);
+  }
 
   const filteredProducts = products.filter((p) => {
     if (!p.isActive) return false;
