@@ -124,6 +124,18 @@ export default function Checkout() {
                 <Input id="googleMapsLink" value={formData.googleMapsLink} onChange={(e) => setFormData((prev) => ({ ...prev, googleMapsLink: e.target.value }))} placeholder="https://maps.google.com/..." className="mt-2 h-14 text-base w-full" dir="ltr" />
                 <p className="text-muted-foreground text-sm mt-2">افتح جوجل ماب → اختار موقعك → اضغط مشاركة → انسخ الرابط</p>
               </div>
+              <div className="flex items-start gap-3 mt-6 p-4 bg-accent/10 rounded-xl border border-accent/20">
+                <Checkbox
+                  id="cleaning"
+                  checked={cleaningRequested}
+                  onCheckedChange={(checked) => setCleaningRequested(checked === true)}
+                  className="mt-1 h-5 w-5"
+                />
+                <Label htmlFor="cleaning" className="text-base font-medium cursor-pointer leading-relaxed">
+                  تنظيف وغسيل المنتجات (+50 ج.م)
+                  <p className="text-sm text-muted-foreground font-normal mt-1">هنغسل ونجهز المنتجات قبل التوصيل</p>
+                </Label>
+              </div>
             </div>
             <div className="flex gap-3 mt-8">
               <Button variant="outline" size="xl" className="flex-1 gap-2" onClick={handleBack}><ArrowRight className="h-5 w-5" />رجوع</Button>
@@ -156,6 +168,7 @@ export default function Checkout() {
               <div className="space-y-3">
                 <div className="flex justify-between text-lg"><span className="text-muted-foreground">إجمالي المنتجات</span><span className="font-bold text-foreground">{subtotal} ج</span></div>
                 <div className="flex justify-between text-lg"><span className="text-muted-foreground">رسوم التوصيل</span><span className="font-bold text-foreground">{deliveryFee} ج</span></div>
+                {cleaningRequested && <div className="flex justify-between text-lg"><span className="text-muted-foreground">تنظيف وغسيل 🧼</span><span className="font-bold text-foreground">{cleaningFee} ج</span></div>}
                 <div className="flex justify-between border-t border-border pt-3"><span className="text-xl font-bold text-foreground">الإجمالي</span><span className="text-2xl font-bold text-accent">{total} ج</span></div>
               </div>
             </div>
