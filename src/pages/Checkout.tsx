@@ -5,6 +5,7 @@ import { useDeliveryZones } from "@/hooks/useDeliveryZones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { MessageCircle, ArrowLeft, ArrowRight, ShoppingCart, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -30,10 +31,12 @@ export default function Checkout() {
     addressText: "",
     googleMapsLink: "",
   });
+  const [cleaningRequested, setCleaningRequested] = useState(false);
+  const cleaningFee = cleaningRequested ? 50 : 0;
 
   const selectedZone = formData.zoneId ? getZoneById(formData.zoneId) : null;
   const deliveryFee = selectedZone?.fee || 0;
-  const total = subtotal + deliveryFee;
+  const total = subtotal + deliveryFee + cleaningFee;
 
   const handleNext = () => {
     if (step === 1) {
@@ -52,7 +55,8 @@ export default function Checkout() {
     const zone = getZoneById(formData.zoneId);
     let itemsList = items.map((item) => `- ${item.product.nameAr} × ${item.quantity} = ${item.product.price * item.quantity} ج`).join("\n");
 
-    const message = `🛒 *طلب جديد من TazaMart*\n\n📍 *المنطقة:* ${zone?.nameAr || ""}\n📌 *العنوان:* ${formData.addressText}\n${formData.googleMapsLink ? `🗺 *موقع جوجل ماب:* ${formData.googleMapsLink}` : ""}\n\n📦 *تفاصيل الطلب:*\n${itemsList}\n\n💰 *إجمالي المنتجات:* ${subtotal} ج\n🚚 *رسوم التوصيل:* ${deliveryFee} ج\n✅ *الإجمالي الكلي:* ${total} ج\n\nشكراً لتسوقك مع TazaMart! 💜`;
+    const cleaningLine = cleaningRequested ? `\n🧼 *تنظيف وغسيل:* ${cleaningFee} ج` : "";
+    const message = `🛒 *طلب جديد من TazaMart*\n\n📍 *المنطقة:* ${zone?.nameAr || ""}\n📌 *العنوان:* ${formData.addressText}\n${formData.googleMapsLink ? `🗺 *موقع جوجل ماب:* ${formData.googleMapsLink}` : ""}\n\n📦 *تفاصيل الطلب:*\n${itemsList}\n\n💰 *إجمالي المنتجات:* ${subtotal} ج\n🚚 *رسوم التوصيل:* ${deliveryFee} ج${cleaningLine}\n✅ *الإجمالي الكلي:* ${total} ج${cleaningRequested ? "\n\n⚠️ *ملاحظة:* العميل طلب خدمة تنظيف وغسيل المنتجات" : ""}\n\nشكراً لتسوقك مع TazaMart! 💜`;
 
     sessionStorage.setItem("tazamart-last-order", JSON.stringify({
       zone: zone?.nameAr, address: formData.addressText,
@@ -121,6 +125,18 @@ export default function Checkout() {
                 <Input id="googleMapsLink" value={formData.googleMapsLink} onChange={(e) => setFormData((prev) => ({ ...prev, googleMapsLink: e.target.value }))} placeholder="https://maps.google.com/..." className="mt-2 h-14 text-base w-full" dir="ltr" />
                 <p className="text-muted-foreground text-sm mt-2">افتح جوجل ماب → اختار موقعك → اضغط مشاركة → انسخ الرابط</p>
               </div>
+              <div className="flex items-start gap-3 mt-6 p-4 bg-accent/10 rounded-xl border border-accent/20">
+                <Checkbox
+                  id="cleaning"
+                  checked={cleaningRequested}
+                  onCheckedChange={(checked) => setCleaningRequested(checked === true)}
+                  className="mt-1 h-5 w-5"
+                />
+                <Label htmlFor="cleaning" className="text-base font-medium cursor-pointer leading-relaxed">
+                  تنظيف وغسيل المنتجات (+50 ج.م)
+                  <p className="text-sm text-muted-foreground font-normal mt-1">هنغسل ونجهز المنتجات قبل التوصيل</p>
+                </Label>
+              </div>
             </div>
             <div className="flex gap-3 mt-8">
               <Button variant="outline" size="xl" className="flex-1 gap-2" onClick={handleBack}><ArrowRight className="h-5 w-5" />رجوع</Button>
@@ -153,6 +169,7 @@ export default function Checkout() {
               <div className="space-y-3">
                 <div className="flex justify-between text-lg"><span className="text-muted-foreground">إجمالي المنتجات</span><span className="font-bold text-foreground">{subtotal} ج</span></div>
                 <div className="flex justify-between text-lg"><span className="text-muted-foreground">رسوم التوصيل</span><span className="font-bold text-foreground">{deliveryFee} ج</span></div>
+                {cleaningRequested && <div className="flex justify-between text-lg"><span className="text-muted-foreground">تنظيف وغسيل 🧼</span><span className="font-bold text-foreground">{cleaningFee} ج</span></div>}
                 <div className="flex justify-between border-t border-border pt-3"><span className="text-xl font-bold text-foreground">الإجمالي</span><span className="text-2xl font-bold text-accent">{total} ج</span></div>
               </div>
             </div>

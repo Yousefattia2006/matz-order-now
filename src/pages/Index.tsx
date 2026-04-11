@@ -116,16 +116,6 @@ export default function Index() {
 
         <div className="mb-6 -mx-4 px-4 overflow-x-auto">
           <div className="flex gap-2 md:gap-3 pb-2 min-w-max">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={`px-5 py-3 rounded-full text-base md:text-lg font-semibold transition-all whitespace-nowrap ${
-                selectedCategory === null
-                  ? "bg-primary text-primary-foreground shadow-fresh"
-                  : "bg-card text-foreground hover:bg-secondary"
-              }`}
-            >
-              الكل
-            </button>
             {categories.map((category) => (
               <button
                 key={category.id}
@@ -140,6 +130,16 @@ export default function Index() {
                 <span>{category.name_ar}</span>
               </button>
             ))}
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-5 py-3 rounded-full text-base md:text-lg font-semibold transition-all whitespace-nowrap ${
+                selectedCategory === null
+                  ? "bg-primary text-primary-foreground shadow-fresh"
+                  : "bg-card text-foreground hover:bg-secondary"
+              }`}
+            >
+              الكل
+            </button>
           </div>
         </div>
 

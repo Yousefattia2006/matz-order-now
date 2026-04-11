@@ -78,16 +78,6 @@ export default function Shop() {
 
         <div className="mb-8 -mx-4 px-4 overflow-x-auto">
           <div className="flex gap-3 pb-2 min-w-max">
-            <button
-              onClick={() => handleCategoryChange(null)}
-              className={`px-6 py-3 rounded-full text-lg font-semibold transition-all whitespace-nowrap ${
-                selectedCategory === null
-                  ? "bg-primary text-primary-foreground shadow-fresh"
-                  : "bg-card text-foreground hover:bg-secondary"
-              }`}
-            >
-              الكل
-            </button>
             {categories.map((category) => (
               <button
                 key={category.id}
@@ -102,6 +92,16 @@ export default function Shop() {
                 <span>{category.name_ar}</span>
               </button>
             ))}
+            <button
+              onClick={() => handleCategoryChange(null)}
+              className={`px-6 py-3 rounded-full text-lg font-semibold transition-all whitespace-nowrap ${
+                selectedCategory === null
+                  ? "bg-primary text-primary-foreground shadow-fresh"
+                  : "bg-card text-foreground hover:bg-secondary"
+              }`}
+            >
+              الكل
+            </button>
           </div>
         </div>
 
