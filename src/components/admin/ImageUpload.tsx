@@ -1,25 +1,50 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, X, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ImageUploadProps {
   value: string;
-  onChange: (dataUrl: string) => void;
+  onChange: (url: string) => void;
   className?: string;
 }
 
 export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState(value);
+  const [uploading, setUploading] = useState(false);
 
-  const handleFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      setPreview(result);
-      onChange(result);
-    };
-    reader.readAsDataURL(file);
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(fileName, file, { contentType: file.type, upsert: true });
+
+      if (uploadError) {
+        console.error("Upload failed:", uploadError);
+        // Fallback to base64 if upload fails
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setPreview(result);
+          onChange(result);
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+      setPreview(urlData.publicUrl);
+      onChange(urlData.publicUrl);
+    } catch (e) {
+      console.error("Upload error:", e);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,9 +84,16 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
           variant="outline"
           className="w-full h-32 border-dashed flex flex-col gap-2"
           onClick={() => inputRef.current?.click()}
+          disabled={uploading}
         >
-          <ImagePlus className="h-6 w-6 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Upload Image</span>
+          {uploading ? (
+            <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
+          ) : (
+            <ImagePlus className="h-6 w-6 text-muted-foreground" />
+          )}
+          <span className="text-sm text-muted-foreground">
+            {uploading ? "Uploading..." : "Upload Image"}
+          </span>
           <span className="text-xs text-muted-foreground/70">Recommended: 400×400px</span>
         </Button>
       )}

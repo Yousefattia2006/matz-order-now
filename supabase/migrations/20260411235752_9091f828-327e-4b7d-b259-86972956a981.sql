@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS idx_products_sort_order_created ON public.products (sort_order ASC, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_products_category_sort ON public.products (category_id, sort_order ASC);
