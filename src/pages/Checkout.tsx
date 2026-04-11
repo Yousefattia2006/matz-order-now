@@ -5,6 +5,7 @@ import { useDeliveryZones } from "@/hooks/useDeliveryZones";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { MessageCircle, ArrowLeft, ArrowRight, ShoppingCart, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -30,10 +31,12 @@ export default function Checkout() {
     addressText: "",
     googleMapsLink: "",
   });
+  const [cleaningRequested, setCleaningRequested] = useState(false);
+  const cleaningFee = cleaningRequested ? 50 : 0;
 
   const selectedZone = formData.zoneId ? getZoneById(formData.zoneId) : null;
   const deliveryFee = selectedZone?.fee || 0;
-  const total = subtotal + deliveryFee;
+  const total = subtotal + deliveryFee + cleaningFee;
 
   const handleNext = () => {
     if (step === 1) {
